@@ -248,49 +248,55 @@ private:
 
 GeneratorContextQuickEditModel gGeneratorContextQuickEditModel;
 
-class GeneratorContextSettingEditModel : public ListModel {
+enum class ChaosSettingEdit {
+    Pivot,
+    Span
+};
+
+class GeneratorContextChaosSettingEditModel : public ListModel {
 public:
-    void configure(
-        const char *label,
-        const std::function<void(StringBuilder &)> &printValue,
-        const std::function<void(int, bool)> &onEdit
-    ) {
-        _label = label;
-        _printValue = printValue;
-        _onEdit = onEdit;
+    void configure(GeneratorPage *page, ChaosSettingEdit setting) {
+        _page = page;
+        _setting = setting;
     }
 
     int rows() const override { return 1; }
     int columns() const override { return 2; }
 
     void cell(int row, int column, StringBuilder &str) const override {
-        if (row != 0) {
+        if (row != 0 || !_page) {
             return;
         }
 
         if (column == 0) {
-            str("%s", _label);
-        } else if (column == 1 && _printValue) {
-            _printValue(str);
+            switch (_setting) {
+            case ChaosSettingEdit::Pivot:
+                str("PIVOT");
+                break;
+            case ChaosSettingEdit::Span:
+                str("SPAN");
+                break;
+            }
+        } else if (column == 1) {
+            _page->printChaosSettingEdit(int(_setting), str);
         }
     }
 
     void edit(int row, int column, int value, bool shift) override {
-        if (row != 0 || column != 1 || !_onEdit) {
+        if (row != 0 || column != 1 || !_page) {
             return;
         }
-        _onEdit(value, shift);
+        _page->editChaosSettingEdit(int(_setting), value, shift);
     }
 
     void setSelectedScale(int, bool) override {}
 
 private:
-    const char *_label = "";
-    std::function<void(StringBuilder &)> _printValue;
-    std::function<void(int, bool)> _onEdit;
+    GeneratorPage *_page = nullptr;
+    ChaosSettingEdit _setting = ChaosSettingEdit::Pivot;
 };
 
-GeneratorContextSettingEditModel gGeneratorContextSettingEditModel;
+GeneratorContextChaosSettingEditModel gGeneratorContextChaosSettingEditModel;
 
 void GeneratorPage::show(Generator *generator, StepSelection<CONFIG_STEP_COUNT> *stepSelection) {
     _generator = generator;
@@ -992,6 +998,7 @@ void GeneratorPage::encoder(EncoderEvent &event) {
     bool changed = false;
     bool functionKeyHeld = false;
     bool rerollTriggered = false;
+    bool paramEditTriggered = false;
 
     auto paramIndexForFunction = [&] (int functionIndex) -> int {
         if (_generator->mode() == Generator::Mode::Random) {
@@ -1069,16 +1076,24 @@ void GeneratorPage::encoder(EncoderEvent &event) {
         if (paramIndex >= 0 && pageKeyState()[Key::F0 + functionIndex]) {
             _generator->editParam(paramIndex, event.value(), event.pressed());
             changed = true;
+            if (event.value() != 0) {
+                paramEditTriggered = true;
+            }
         }
     }
 
     if (changed) {
         if (rerollTriggered && abPreviewGenerator(_generator->mode())) {
             _previewArmed = true;
+        } else if (euclideanGeneratorMode(_generator->mode()) && paramEditTriggered) {
+            // Euclidean parameter edits should be directly committable without a separate NEW EUCL reroll.
+            _previewArmed = true;
         }
         _launchpadResetState = false;
         _generator->update();
         if (rerollTriggered && abPreviewGenerator(_generator->mode())) {
+            _generator->showPreview();
+        } else if (euclideanGeneratorMode(_generator->mode()) && paramEditTriggered) {
             _generator->showPreview();
         } else if (!abPreviewGenerator(_generator->mode()) || _generator->showingPreview()) {
             _generator->showPreview();
@@ -1745,46 +1760,14 @@ void GeneratorPage::contextAction(int index) {
 
     if (chaosStyledGeneratorMode(_generator->mode())) {
         if (chaosGeneratorMode(_generator->mode()) && index == 0) {
-            auto *chaos = static_cast<ChaosGenerator *>(_generator);
-            auto *pivotSetting = _model.settings().userSettings().get<ChaosPivotNoteSetting>(SettingChaosPivotNote);
-            gGeneratorContextSettingEditModel.configure("PIVOT",
-                [pivotSetting] (StringBuilder &str) {
-                    str("%d", pivotSetting->getValue());
-                },
-                [this, chaos, pivotSetting] (int value, bool shift) {
-                    (void)shift;
-                    if (value == 0) {
-                        return;
-                    }
-                    pivotSetting->shiftValue(value);
-                    chaos->setPivotNote(pivotSetting->getValue());
-                    _launchpadResetState = false;
-                    invalidateChaosPreview(true);
-                }
-            );
-            _manager.pages().quickEdit.showCompact(gGeneratorContextSettingEditModel, 0, 1);
+            gGeneratorContextChaosSettingEditModel.configure(this, ChaosSettingEdit::Pivot);
+            _manager.pages().quickEdit.showCompact(gGeneratorContextChaosSettingEditModel, 0, 1);
             return;
         }
 
         if (chaosGeneratorMode(_generator->mode()) && index == 1) {
-            auto *chaos = static_cast<ChaosGenerator *>(_generator);
-            auto *spanSetting = _model.settings().userSettings().get<ChaosSpanSetting>(SettingChaosSpan);
-            gGeneratorContextSettingEditModel.configure("SPAN",
-                [spanSetting] (StringBuilder &str) {
-                    str("%d", spanSetting->getValue());
-                },
-                [this, chaos, spanSetting] (int value, bool shift) {
-                    (void)shift;
-                    if (value == 0) {
-                        return;
-                    }
-                    spanSetting->shiftValue(value);
-                    chaos->setSpan(spanSetting->getValue());
-                    _launchpadResetState = false;
-                    invalidateChaosPreview(true);
-                }
-            );
-            _manager.pages().quickEdit.showCompact(gGeneratorContextSettingEditModel, 0, 1);
+            gGeneratorContextChaosSettingEditModel.configure(this, ChaosSettingEdit::Span);
+            _manager.pages().quickEdit.showCompact(gGeneratorContextChaosSettingEditModel, 0, 1);
             return;
         }
 
@@ -1896,6 +1879,47 @@ bool GeneratorPage::contextActionEnabled(int index) const {
     }
 
     return ContextAction(index) != ContextAction::VariationInfo;
+}
+
+void GeneratorPage::printChaosSettingEdit(int settingIndex, StringBuilder &str) const {
+    if (!_generator || !chaosGeneratorMode(_generator->mode())) {
+        return;
+    }
+
+    switch (ChaosSettingEdit(settingIndex)) {
+    case ChaosSettingEdit::Pivot:
+        str("%d", _model.settings().userSettings().get<ChaosPivotNoteSetting>(SettingChaosPivotNote)->getValue());
+        break;
+    case ChaosSettingEdit::Span:
+        str("%d", _model.settings().userSettings().get<ChaosSpanSetting>(SettingChaosSpan)->getValue());
+        break;
+    }
+}
+
+void GeneratorPage::editChaosSettingEdit(int settingIndex, int value, bool shift) {
+    (void)shift;
+    if (value == 0 || !_generator || !boundTrackContextValid() || !chaosGeneratorMode(_generator->mode())) {
+        return;
+    }
+
+    auto *chaos = static_cast<ChaosGenerator *>(_generator);
+    switch (ChaosSettingEdit(settingIndex)) {
+    case ChaosSettingEdit::Pivot: {
+        auto *pivotSetting = _model.settings().userSettings().get<ChaosPivotNoteSetting>(SettingChaosPivotNote);
+        pivotSetting->shiftValue(value);
+        chaos->setPivotNote(pivotSetting->getValue());
+        break;
+    }
+    case ChaosSettingEdit::Span: {
+        auto *spanSetting = _model.settings().userSettings().get<ChaosSpanSetting>(SettingChaosSpan);
+        spanSetting->shiftValue(value);
+        chaos->setSpan(spanSetting->getValue());
+        break;
+    }
+    }
+
+    _launchpadResetState = false;
+    invalidateChaosPreview(true);
 }
 
 void GeneratorPage::init() {

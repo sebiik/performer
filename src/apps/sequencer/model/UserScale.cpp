@@ -50,15 +50,31 @@ bool UserScale::read(VersionedSerializedReader &reader) {
 
     reader.read(_name, NameLength + 1, ProjectVersion::Version5);
     reader.read(_mode);
-    reader.read(_size);
+    uint8_t size = 0;
+    reader.read(size);
 
-    for (int i = 0; i < _size; ++i) {
-        reader.read(_items[i]);
+    ItemArray items;
+    items.fill(0);
+    for (int i = 0; i < size; ++i) {
+        int16_t item = 0;
+        reader.read(item);
+        if (i < CONFIG_USER_SCALE_SIZE) {
+            items[i] = item;
+        }
     }
 
     bool success = reader.checkHash();
     if (!success) {
         clear();
+    } else {
+        if (uint8_t(_mode) >= uint8_t(Mode::Last)) {
+            _mode = Mode::Chromatic;
+        }
+        _size = clamp(int(size), _mode == Mode::Voltage ? 2 : 1, CONFIG_USER_SCALE_SIZE);
+        _items = items;
+        for (int i = 0; i < _size; ++i) {
+            setItem(i, _items[i]);
+        }
     }
 
     return success;

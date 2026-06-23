@@ -6,6 +6,17 @@ on:
     branches: [ "master" ]
 
 jobs:
+  docs_checks:
+    name: Docs checks (links + version consistency)
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: Run docs checks
+      run: python3 scripts/check_docs_ci.py
+
   stm32:
     name: Hardware Platform (STM32)
     runs-on: ubuntu-latest

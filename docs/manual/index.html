@@ -3,8 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>User Manual | PER FORMER eurorack sequencer</title>
-  <meta name="description" content="User manual reference for the Vinx Scorza PER|FORMER fork.">
+  <title>Vinx PER|FORMER User Manual | Firmware Reference</title>
+  <meta name="description" content="User manual for the Vinx Scorza PER|FORMER firmware fork, covering sequencing, generators, Launchpad control, routing targets, calibration, and firmware updates.">
+  <link rel="canonical" href="https://vinxscorza.github.io/performer/manual/">
+  <meta name="theme-color" content="#252525">
+  <meta name="robots" content="index,follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vinx PER|FORMER">
+  <meta property="og:title" content="Vinx PER|FORMER User Manual | Firmware Reference">
+  <meta property="og:description" content="User manual for the Vinx Scorza PER|FORMER firmware fork, covering sequencing, generators, Launchpad control, routing targets, calibration, and firmware updates.">
+  <meta property="og:url" content="https://vinxscorza.github.io/performer/manual/">
+  <meta property="og:image" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta property="og:image:secure_url" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Vinx PER|FORMER firmware social preview">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Vinx PER|FORMER User Manual | Firmware Reference">
+  <meta name="twitter:description" content="User manual for the Vinx Scorza PER|FORMER firmware fork, covering sequencing, generators, Launchpad control, routing targets, calibration, and firmware updates.">
+  <meta name="twitter:image" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta name="twitter:image:alt" content="Vinx PER|FORMER firmware social preview">
   <link rel="stylesheet" href="../style.css">
 </head>
 <body class="manual-page">
@@ -50,6 +69,7 @@
             <nav class="manual-sidebar-nav">
               <ul>
                 <li><a href="#manual-overview">User Manual</a></li>
+                <li><a href="#manual-validation-scope">Known Limits / Validation Scope</a></li>
                 <li><a href="#manual-toc">Table of Contents</a></li>
                 <li><a href="#introduction">Introduction</a>
                   <ul>
@@ -150,13 +170,14 @@
           Vinx Scorza fork while preserving the technical detail needed to use the module confidently.
         </p>
         <p>
-          This manual is being actively adapted for the Vinx Scorza fork and is currently aligned through the active <code>v0.4.3</code> development line. The earlier <code>v0.3.2-vinx.*</code> naming is retained in history as lineage reference.
+          This manual is being actively adapted for the Vinx Scorza fork and is currently aligned through the active development line. The earlier <code>v0.3.2-vinx.*</code> naming is retained in history as lineage reference.
         </p>
         <p>
-          Current validation scope: real hardware testing is still useful for <code>Reset Pulse</code> / <code>Reset Gate</code> and for broader <code>Voltage Mode</code> user-scale coverage in <code>Note</code>, <code>Arp</code>, and <code>Stochastic</code> (especially uncommon scales with <code>notesPerOctave &gt; 12</code> on Arp/Stochastic paths); Desktop Simulator USB MIDI is validated well on <code>macOS / OS X</code> with <code>Launchpad Mini MK3</code>, but not yet across other Launchpads or operating systems. The experimental <code>16-step Editing Mode</code> path is maintainer-validated on <code>Launch Control XL</code>; <code>BeatStep Pro</code> still needs dedicated on-hardware validation. BeatStep Pro template download: <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>. On Launch Control XL, use <code>Factory Preset #1</code>.
+          Known limits and hardware validation status are tracked in
+          <a href="#manual-validation-scope">Known Limits / Validation Scope</a>.
         </p>
         <p>
-          In the current line, <code>Voltage Mode</code> behavior on <code>Arp</code> and <code>Stochastic</code> bypass/transposition paths has been fixed so non-chromatic user scales are respected with correct octave wrapping on the intended <code>1.2V</code> octave span.
+          On <code>Arp</code> and <code>Stochastic</code>, <code>Voltage Mode</code> bypass/transposition paths respect non-chromatic user scales with correct octave wrapping on the intended <code>1.2V</code> octave span.
         </p>
         <p>
           Earlier upstream documentation is still referenced where useful, but the main workflow pages and the current appendix/Launchpad material have already been rewritten and realigned for this fork.
@@ -173,6 +194,59 @@
         </p>
       </section>
 
+      <section class="validation-scope-panel">
+        <h3 id="manual-validation-scope">Known Limits / Validation Scope</h3>
+        <p>
+          This table is the canonical validation snapshot for the firmware line. It is intentionally explicit about what is already confirmed in real use and what still needs broader hardware coverage.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align: left">Area</th>
+              <th style="text-align: left">Status</th>
+              <th style="text-align: left">Current scope / practical note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: left">16-step Editing Mode (LCXL)</td>
+              <td style="text-align: left"><span class="status-chip status-chip-validated">Validated</span></td>
+              <td style="text-align: left">Maintainer-side on-device validation is on <code>Launch Control XL</code> using <code>Factory Preset #1</code>.</td>
+            </tr>
+            <tr>
+              <td style="text-align: left">16-step Editing Mode (BSP)</td>
+              <td style="text-align: left"><span class="status-chip status-chip-pending">Pending hardware test</span></td>
+              <td style="text-align: left">Template/mapping is code-supported; dedicated maintainer-side on-device validation is still pending. Template download: <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>.</td>
+            </tr>
+            <tr>
+              <td style="text-align: left">Voltage Mode (Note/Arp/Stochastic)</td>
+              <td style="text-align: left"><span class="status-chip status-chip-partial">Partially validated</span></td>
+              <td style="text-align: left">Cross-track behavior is aligned (including octave wrapping on <code>1.2V</code> span). Additional field testing is still useful for uncommon scales, especially <code>notesPerOctave &gt; 12</code> on Arp/Stochastic paths.</td>
+            </tr>
+            <tr>
+              <td style="text-align: left">External clock modes</td>
+              <td style="text-align: left"><span class="status-chip status-chip-partial">Partially validated</span></td>
+              <td style="text-align: left"><code>Reset Pulse</code> / <code>Reset Gate</code> behavior is stabilized, but broader hardware testing across different clock sources/modules remains recommended.</td>
+            </tr>
+            <tr>
+              <td style="text-align: left">Desktop Simulator USB MIDI</td>
+              <td style="text-align: left"><span class="status-chip status-chip-partial">Partially validated</span></td>
+              <td style="text-align: left">Validated on <code>macOS / OS X</code> with <code>Launchpad Mini MK3</code>; coverage on other Launchpads and OS combinations is still incomplete.</td>
+            </tr>
+            <tr>
+              <td style="text-align: left">External controller concurrency</td>
+              <td style="text-align: left"><span class="status-chip status-chip-pending">Known architecture limit</span></td>
+              <td style="text-align: left">One active external USB controller workflow at a time. USB hubs (including powered hubs) are not supported by the current firmware USB host stack.</td>
+            </tr>
+            <tr>
+              <td style="text-align: left">Save/Load reboot issue hardening</td>
+              <td style="text-align: left"><span class="status-chip status-chip-partial">Strong partial hardening</span></td>
+              <td style="text-align: left"><code>Save</code>/<code>Save As</code>/<code>Load</code> races were strongly mitigated (serialized tasks + UI-thread result dispatch), but full architectural closure is still in progress.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
       <section>
         <h3 id="manual-video">Video Walkthrough</h3>
         <p>
@@ -187,6 +261,7 @@
           Use this compact outline for the main structure. For detailed navigation, use the sidebar and search.
         </p>
         <ul>
+          <li><a href="#manual-validation-scope">Known Limits / Validation Scope</a></li>
           <li><a href="#introduction">Introduction</a></li>
           <li><a href="#introduction-shortcuts">Shortcuts and Key Combinations</a></li>
           <li><a href="#concepts">Concepts</a></li>
@@ -217,17 +292,17 @@
         </p>
         <h3 id="introduction-upstream-differences">If You Come from Westlicht or Mebitek</h3>
         <p>
-          The Vinx line keeps the overall PER|FORMER workflow intact, but it is no longer just a conservative maintenance fork. The main differences versus older upstream lines are now concentrated in generator semantics, external-controller workflows, scale/voltage behavior, and the documentation/simulator ecosystem.
+          The Vinx line keeps the overall PER|FORMER workflow intact, while extending generator semantics, external-controller workflows, scale/voltage behavior, and the documentation/simulator ecosystem.
         </p>
         <ul>
-          <li>Generator workflow is explicitly preview/apply-oriented: <em>Random</em>, <em>Acid</em>, <em>Euclidean</em>, and the <em>Chaos</em> family use compare/cancel/apply paths instead of silent destructive edits; in the current line generators enter on <code>ORIGINAL</code> and create preview only after explicit reroll.</li>
+          <li>Generator workflow is explicitly preview/apply-oriented: <em>Random</em>, <em>Acid</em>, <em>Euclidean</em>, and the <em>Chaos</em> family use compare/cancel/apply paths instead of silent destructive edits; generators enter on <code>ORIGINAL</code> and create preview only after explicit reroll or preview arming.</li>
           <li>The generator family has diverged further: <em>Acid</em> is split into <em>Layer</em>/<em>Phrase</em>, <em>Chaos</em> into <em>Vandalize</em>/<em>Wreck</em>, and non-Note tracks use <em>Entropy</em> as the local Chaos subset.</li>
           <li><code>Voltage Mode</code> handling is hardened beyond legacy behavior: user-scale octave semantics are respected across <code>Note</code>, <code>Arp</code>, and <code>Stochastic</code>, including corrected <code>1.2V</code>-span octave wrapping on Arp/Stochastic paths.</li>
-          <li>Step-edit ergonomics expanded: quick-access <code>First/Last</code> fields now support <code>16-step</code> bank paging with <code>PREV/NEXT</code>, and Note ties are now chain-aware for unified tied-note pitch edits.</li>
+          <li>Step-edit ergonomics include quick-access <code>First/Last</code> fields with <code>16-step</code> bank paging via <code>PREV/NEXT</code>, and chain-aware Note ties for unified tied-note pitch edits.</li>
           <li>Track outputs gained explicit gate shaping via per-track <code>Gate Out Mode</code> (<code>Gate</code>/<code>Trigger</code>) with global trigger-length control in System settings.</li>
           <li>Project file operations (<code>Load</code>/<code>Save</code>/<code>Save As</code>) were hardened against overlap races by serialized task flow and UI-thread result delivery.</li>
           <li>External control is broader than upstream Launchpad-only workflows: Launchpad integration is much deeper, and the experimental <code>16-step Editing Mode</code> adds direct <code>16 knobs + 16 pads</code> per-step control on Note tracks.</li>
-          <li>The fork is now maintained as a standalone Vinx line (<code>v0.x.y</code>) with aligned manual, LP cheatsheet, Web/Desktop simulator pages, and a tracked feature/release history.</li>
+          <li>The fork is maintained as a standalone Vinx line (<code>v0.x.y</code>) with aligned manual, LP cheatsheet, Web/Desktop simulator pages, and a tracked feature/release history.</li>
         </ul>
         <h3 id="introduction-shortcuts">Shortcuts and Key Combinations</h3>
         <p>
@@ -237,7 +312,7 @@
           <li><strong>Machine shortcuts</strong> are written with panel key names, for example <code>PAGE + SHIFT + F5</code>, <code>PAGE + S7</code>, or <code>SHIFT + step</code>.</li>
           <li><strong>Launchpad shortcuts</strong> use the local LP naming convention: <code>TOP</code>, <code>TRK</code>, and <code>GRID</code> (for example <code>TOP 8 + TOP 4</code>).</li>
           <li>When a function has both machine and Launchpad access paths, both are listed where useful; when only one side is available, it is stated directly.</li>
-          <li>Canonical examples in the current line: open machine <code>GEN</code> with <code>PAGE + SHIFT + F5</code>; toggle LP Generators Mode with <code>TOP 8 + TOP 4</code>; undo/redo on supported step pages with machine <code>PAGE + S7</code> or LP <code>TOP 7 + TOP 8</code>.</li>
+          <li>Common examples: open machine <code>GEN</code> with <code>PAGE + SHIFT + F5</code>; toggle LP Generators Mode with <code>TOP 8 + TOP 4</code>; undo/redo on supported step pages with machine <code>PAGE + S7</code> or LP <code>TOP 7 + TOP 8</code>.</li>
         </ul>
         <h4>Machine Shortcut Reference</h4>
         <table>
@@ -535,7 +610,7 @@
           In addition to the routing system, specific MIDI controllers can be used as dedicated control surfaces for parts of the sequencer workflow. This includes sequence editing, mutes, fills, pattern launch, and dedicated external edit flows.
         </p>
         <p>
-          In the current Vinx line there are two distinct external controller workflows: the Novation Launchpad family, and an experimental <em>16-step Editing Mode</em> path for 16-knob/16-pad controllers such as Launch Control XL and BeatStep Pro. BeatStep Pro template download: <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>. On Launch Control XL, use <code>Factory Preset #1</code>.
+          There are two distinct external controller workflows: the Novation Launchpad family, and an experimental <em>16-step Editing Mode</em> path for 16-knob/16-pad controllers such as Launch Control XL and BeatStep Pro. BeatStep Pro template download: <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>. On Launch Control XL, use <code>Factory Preset #1</code>.
         </p>
         <p>
           <em>16-step Editing Mode</em> is focused on direct per-step editing on Note tracks: knobs drive note values and pads toggle gates on the visible 16-step bank, with bank navigation for longer loops. BeatStep Pro template download: <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>. On Launch Control XL, use <code>Factory Preset #1</code>.
@@ -754,7 +829,7 @@
       <section>
         <h2 id="pages">Pages</h2>
         <p>
-          This chapter summarizes the main operating pages of the sequencer and is aligned with the current <code>v0.4.3</code> Vinx behavior.
+          This chapter summarizes the main operating pages of the sequencer and is aligned with the current Vinx behavior.
         </p>
 
         <h3 id="pages-project">Project</h3>
@@ -820,7 +895,7 @@
           </tbody>
         </table>
         <p>
-          File operations in this page are now guarded against overlap: while a <code>Load</code>/<code>Save</code>/<code>Save As</code> task is running, the slot list can show a temporary <code>(busy)</code> placeholder and concurrent requests are rejected instead of overlapping in undefined order. This hardening is meant to reduce intermittent reboot-risk paths during SD operations.
+          File operations in this page are guarded against overlap: while a <code>Load</code>/<code>Save</code>/<code>Save As</code> task is running, the slot list can show a temporary <code>(busy)</code> placeholder and concurrent requests are rejected instead of overlapping in undefined order. This hardening is meant to reduce intermittent reboot-risk paths during SD operations.
         </p>
         <p>
           This is intentionally documented as a strong partial hardening, not yet a full architectural thread-safety closure across every legacy file-operation path.
@@ -868,7 +943,7 @@
           In Note, Logic and Arpeggiator related modes this includes parameters such as play mode, fill mode, slide time, octave, transpose, rotate and multiple performance-oriented probability biases. In Curve mode it additionally includes voltage behavior such as offset and min/max handling. In MIDI/CV mode it becomes a converter and arpeggiator setup page with voice count, note priority, ranges and modulation behavior.
         </p>
         <p>
-          In the current Vinx line, Note/Curve/Stochastic/Logic/Arp tracks also expose <code>Gate Out Mode</code> (<code>Gate</code> or <code>Trigger</code>). This is a per-track output mode, not per-step trigger editing. In <code>Trigger</code> mode, gate output is converted at output stage to fixed pulses on rising edges; internal sequencing semantics (step length, retrig, ratchet) stay unchanged.
+          Note/Curve/Stochastic/Logic/Arp tracks expose <code>Gate Out Mode</code> (<code>Gate</code> or <code>Trigger</code>). This is a per-track output mode, not per-step trigger editing. In <code>Trigger</code> mode, gate output is converted at output stage to fixed pulses on rising edges; internal sequencing semantics (step length, retrig, ratchet) stay unchanged.
         </p>
         <p>
           The track context menu provides initialization, copy, paste and route creation for routable parameters.
@@ -1251,7 +1326,7 @@
         </p>
         <h4>Step Visualization</h4>
         <p>
-          The current Vinx line uses a denser step visualization model than older upstream builds. The goal is to keep the 16 visible pads readable in performance, while still exposing timing and behavior details without opening extra pages.
+          The Vinx line uses a dense step visualization model. The goal is to keep the 16 visible pads readable in performance, while still exposing timing and behavior details without opening extra pages.
         </p>
         <table>
           <thead>
@@ -1314,7 +1389,7 @@
           </tbody>
         </table>
         <p>
-          On the current Vinx line, the Curve track gate group is no longer just an on/off trigger lane: it now includes per-step <em>Gate Offset</em> and <em>Gate Length</em>, so each curve step can shift its trigger earlier or later and define its own gate duration.
+          On Curve tracks, the gate group includes per-step <em>Gate Offset</em> and <em>Gate Length</em>, so each curve step can shift its trigger earlier or later and define its own gate duration.
         </p>
         <p>The following layers are available in Stochastic mode:</p>
         <table>
@@ -1436,7 +1511,7 @@
         </p>
         <h4>Quick Access</h4>
         <p>
-          The Steps page is one of the most frequently used pages when operating the sequencer. To change sequence parameters such as Run Mode, First Step, Last Step and others, one normally needs to temporarily switch to the <a href="#pages-sequence">Sequence</a> page. To improve this workflow, most sequence parameters can be accessed through a quick access function. To access a parameter, hold <code>PAGE</code> and press <code>S9</code> to <code>S16</code>, similarly to switching between pages, but keep holding the <code>PAGE</code> button. The page is now overlaid with the selected parameter.
+          The Steps page is one of the most frequently used pages when operating the sequencer. To change sequence parameters such as Run Mode, First Step, Last Step and others, one normally needs to temporarily switch to the <a href="#pages-sequence">Sequence</a> page. To improve this workflow, most sequence parameters can be accessed through a quick access function. To access a parameter, hold <code>PAGE</code> and press <code>S9</code> to <code>S16</code>, similarly to switching between pages, but keep holding the <code>PAGE</code> button. The page is overlaid with the selected parameter.
         </p>
         <table>
           <thead>
@@ -1478,7 +1553,7 @@
           You can access generators in each sequence layer to generate their values through the context menu with <code>SHIFT</code> + <code>PAGE</code>.
         </p>
         <p>
-          In the Vinx fork, generator work is explicitly preview-oriented, but preview arming is now explicit: all generators enter on <code>ORIGINAL</code>, and the first generated result appears only after an intentional reroll action (<code>NEW RAND</code>, <code>NEW EUCL</code>, or <code>CHAOS</code>). The page still opens on the current 16-step bank while keeping full sequence context where applicable.
+          In the Vinx fork, generator work is explicitly preview-oriented, but preview arming is intentional: all generators enter on <code>ORIGINAL</code>, the first generated result normally appears after an intentional reroll action (<code>NEW RAND</code>, <code>NEW EUCL</code>, or <code>CHAOS</code>), and Euclidean direct parameter edits can also arm a valid preview. The page still opens on the current 16-step bank while keeping full sequence context where applicable.
         </p>
         <p>
           The general workflow is: open the generator, shape parameters, use <code>A/B</code> to compare preview and original material, then use <code>Cancel</code> to discard or <code>Apply</code> to write the result into the sequence. On <em>Chaos</em>/<em>Entropy</em>, parameter edits do not auto-reroll: press <code>CHAOS</code> explicitly to build the next valid preview before applying.
@@ -1508,7 +1583,7 @@
           <tbody>
             <tr><td style="text-align: left">Random</td><td style="text-align: left">Random generator with non-destructive preview and seed-based regeneration.</td></tr>
             <tr><td style="text-align: left">Acid</td><td style="text-align: left">Note-track generator for acid-like Gate / Note / Slide motion.</td></tr>
-            <tr><td style="text-align: left">Chaos</td><td style="text-align: left">Experimental Note-track multi-layer generator that now opens a <code>CHAOS MODE</code> submenu for <code>Vandalize Sequence</code> or <code>Wreck Pattern</code>.</td></tr>
+            <tr><td style="text-align: left">Chaos</td><td style="text-align: left">Experimental Note-track multi-layer generator with a <code>CHAOS MODE</code> submenu for <code>Vandalize Sequence</code> or <code>Wreck Pattern</code>.</td></tr>
             <tr><td style="text-align: left">Euclidean</td><td style="text-align: left">Euclidean generator based on Bjorklund's algorithm.</td></tr>
             <tr><td style="text-align: left">Init Steps</td><td style="text-align: left">Initialize all step layers in the current generator scope. If a persistent selection exists it is used first; otherwise the whole current track is initialized.</td></tr>
           </tbody>
@@ -1524,7 +1599,7 @@
         </p>
         <h4>Context Menu</h4>
         <p>
-          Hold <code>SHIFT</code> + <code>PAGE</code> or double-click <code>PAGE</code> in a generator page to open its context menu. The menu now follows a more uniform layout by generator family:
+          Hold <code>SHIFT</code> + <code>PAGE</code> or double-click <code>PAGE</code> in a generator page to open its context menu. The menu follows a uniform layout by generator family:
         </p>
         <table>
           <thead>
@@ -1542,16 +1617,16 @@
           </tbody>
         </table>
         <p>
-          All generators now enter on <strong>ORIGINAL</strong>. The first generated preview is created only after an explicit reroll action.
+          Generator pages enter on <strong>ORIGINAL</strong>. The first generated preview is normally created only after an explicit reroll action; <em>Euclidean</em> is the exception for direct parameter editing, because changing <code>Offset</code>, <code>Steps</code>, or <code>Beats</code> arms a valid preview that can be applied immediately.
         </p>
         <p>
-          On seed-driven generators, <code>F1</code> on the page itself toggles <code>A/B</code> between the original sequence and the generated preview. While the original is shown, the seed field reads <strong>ORIGINAL</strong>, making it easy to compare the generated result with the untouched source material. On <em>Random</em>/<em>Acid</em>/<em>Euclidean</em>, parameter edits keep updating preview continuously; on <em>Chaos</em>/<em>Entropy</em>, target/selection/amount edits no longer auto-reroll and require explicit <code>CHAOS</code> press for the next valid preview.
+          On seed-driven generators, <code>F1</code> on the page itself toggles <code>A/B</code> between the original sequence and the generated preview. While the original is shown, the seed field reads <strong>ORIGINAL</strong>, making it easy to compare the generated result with the untouched source material. On <em>Random</em>/<em>Acid</em>/<em>Euclidean</em>, parameter edits update the preview continuously; on <em>Chaos</em>/<em>Entropy</em>, target/selection/amount edits require an explicit <code>CHAOS</code> press for the next valid preview.
         </p>
         <p>
-          The footer controls on <em>Random</em>, <em>Acid</em>, and <em>Chaos</em> are treated as in-context generator actions: switching between those footer options no longer drops you out of the generator page unexpectedly.
+          The footer controls on <em>Random</em>, <em>Acid</em>, and <em>Chaos</em> are treated as in-context generator actions, so switching between those footer options stays inside the generator page.
         </p>
         <p>
-          On <em>Random</em>, <em>Acid</em>, and <em>Euclidean</em>, <code>ENCODER press</code> now commits the generator directly, mirroring <code>Apply</code> from the context menu (where <code>F5</code> is <code>Apply</code>) without needing to open that menu.
+          On <em>Random</em>, <em>Acid</em>, and <em>Euclidean</em>, <code>ENCODER press</code> commits the generator directly, mirroring <code>Apply</code> from the context menu (where <code>F5</code> is <code>Apply</code>) without needing to open that menu.
         </p>
         <h5>Encoder Rotation Semantics</h5>
         <p>
@@ -1568,13 +1643,13 @@
             <tr><td style="text-align: left"><em>Random</em></td><td style="text-align: left">Rotates the <code>Seed</code> only. It does not randomize shaping parameters. For a full reroll behavior, use <code>NEW RAND</code> (or <code>GRID 1</code> in LP Generators Mode).</td></tr>
             <tr><td style="text-align: left"><em>Acid Layer</em></td><td style="text-align: left">Rotates the <code>Seed</code> only. It does not randomize shaping parameters. For a full reroll behavior, use <code>NEW RAND</code> (or <code>GRID 2</code> in LP Generators Mode).</td></tr>
             <tr><td style="text-align: left"><em>Acid Phrase</em></td><td style="text-align: left">Rotates the <code>Seed</code> only. It does not randomize shaping parameters. For a full reroll behavior, use <code>NEW RAND</code> (or <code>GRID 10</code> in LP Generators Mode).</td></tr>
-            <tr><td style="text-align: left"><em>Euclidean</em></td><td style="text-align: left">Rotation performs <code>NEW EUCL</code> reroll.</td></tr>
+            <tr><td style="text-align: left"><em>Euclidean</em></td><td style="text-align: left">Rotation performs <code>NEW EUCL</code> reroll when no parameter key is held; <code>F2/F3/F4</code> + rotation edits <code>Offset</code>/<code>Steps</code>/<code>Beats</code> and arms preview directly.</td></tr>
             <tr><td style="text-align: left"><em>Chaos</em> (<em>Vandalize</em> / <em>Wreck</em>)</td><td style="text-align: left">Rotation navigates the target matrix. It does not trigger <code>CHAOS</code> by itself. (With <code>F2</code> held, rotation edits <code>Amount</code>.)</td></tr>
             <tr><td style="text-align: left"><em>Entropy</em></td><td style="text-align: left">Rotation navigates the dedicated target matrix used by non-Note tracks. It does not trigger <code>CHAOS</code> by itself. (With <code>F2</code> held, rotation edits <code>Amount</code>.)</td></tr>
           </tbody>
         </table>
         <p>
-          Outside the LP <em>Generators Mode</em> mini-mode, Launchpad track/scene retarget is now locked across the Performer <code>GEN</code> menu path: the main <code>GEN</code> chooser, <em>Acid</em>/<em>Chaos</em> sub-selectors, and active generator pages. In practice, those choices stay bound to the current track until you explicitly cancel or confirm on the machine, preventing wrong-target apply/cancel edge cases.
+          Outside the LP <em>Generators Mode</em> mini-mode, Launchpad track/scene retarget is locked across the Performer <code>GEN</code> menu path: the main <code>GEN</code> chooser, <em>Acid</em>/<em>Chaos</em> sub-selectors, and active generator pages. In practice, those choices stay bound to the current track until you explicitly cancel or confirm on the machine, preventing wrong-target apply/cancel edge cases.
         </p>
         <p>
           <code>ResetGen</code> is intentionally separated from reroll actions: <em>Random</em> resets to <code>Smooth 0</code>, <code>Bias 0</code>, <code>Range 5</code>, <code>Var 100</code>; <em>Acid</em> resets to <code>Density 50</code>, <code>Slide 10</code>, <code>Range 35</code>, <code>Var 100</code>; and <em>Euclidean</em> resets to <code>Steps 16</code>, <code>Beats 1</code>, <code>Offset 0</code>. Rerolling remains an explicit action via <code>NEW RAND</code>, <code>NEW EUCL</code>, or <code>CHAOS</code>.
@@ -1589,20 +1664,20 @@
           A simple working habit is: enter the generator, shape the preview with the current parameters, use <code>A/B</code> to judge whether the generated result actually beats the source, then either <code>Apply</code> or back out cleanly with <code>Cancel</code>. The generators are meant to support that kind of deliberate use rather than blind destructive iteration.
         </p>
         <p>
-          Note: in the current Vinx line, <em>Chaos</em> and <em>Entropy</em> use their own dedicated context actions (<code>PIVOT</code>, <code>SPAN</code>, <code>ResetGen</code>, <code>Cancel</code>, <code>Apply</code>) and keep reroll explicit on <code>CHAOS</code>.
+          Note: <em>Chaos</em> and <em>Entropy</em> use their own dedicated context actions (<code>PIVOT</code>, <code>SPAN</code>, <code>ResetGen</code>, <code>Cancel</code>, <code>Apply</code>) and keep reroll explicit on <code>CHAOS</code>.
         </p>
         <p>
-          <em>Euclidean</em> uses the same compare logic on its main page: <code>F1</code> toggles <code>A/B</code>, <code>F2</code>/<code>F3</code>/<code>F4</code> edit <code>Offset</code>/<code>Steps</code>/<code>Beats</code>, and <code>F5</code> triggers <code>NEW EUCL</code>. Rotating the encoder with no <code>F2/F3/F4</code> held mirrors <code>NEW EUCL</code> reroll; holding <code>F2</code>, <code>F3</code>, or <code>F4</code> edits only the bound parameter. Its context menu keeps only <code>ResetGen</code>, <code>Cancel</code> and <code>Apply</code>.
+          <em>Euclidean</em> uses the same compare logic on its main page: <code>F1</code> toggles <code>A/B</code>, <code>F2</code>/<code>F3</code>/<code>F4</code> edit <code>Offset</code>/<code>Steps</code>/<code>Beats</code>, and <code>F5</code> triggers <code>NEW EUCL</code>. Rotating the encoder with no <code>F2/F3/F4</code> held mirrors <code>NEW EUCL</code> reroll; holding <code>F2</code>, <code>F3</code>, or <code>F4</code> edits only the bound parameter and arms a preview, so <code>Apply</code> can write the edited Euclidean sequence without a separate reroll. Its context menu keeps only <code>ResetGen</code>, <code>Cancel</code> and <code>Apply</code>.
         </p>
         <h4>Chaos</h4>
         <p>
           <em>Chaos</em> is currently an experimental generator available only on Note tracks. Unlike <em>Random</em>, which works on the active layer, <em>Chaos</em> can randomize multiple Note-track layers together from a single page.
         </p>
         <p>
-          Entering <em>Chaos</em> now opens a <code>CHAOS MODE</code> submenu with two choices: <code>Vandalize Sequence</code> keeps the classic single-sequence <em>Chaos</em> workflow, while <code>Wreck Pattern</code> applies the same destructive idea across all Note tracks in the current pattern.
+          Entering <em>Chaos</em> opens a <code>CHAOS MODE</code> submenu with two choices: <code>Vandalize Sequence</code> keeps the classic single-sequence <em>Chaos</em> workflow, while <code>Wreck Pattern</code> applies the same destructive idea across all Note tracks in the current pattern.
         </p>
         <p>
-          Both <em>Chaos</em> modes now enter on <code>ORIGINAL</code>. Their scope, target mask, and amount defaults are loaded immediately, but no generated result is shown until you explicitly press <code>CHAOS</code>. Before that first reroll, <code>A/B</code> stays on the original view instead of pulling a hidden preview forward.
+          Both <em>Chaos</em> modes enter on <code>ORIGINAL</code>. Their scope, target mask, and amount defaults are loaded immediately, but no generated result is shown until you explicitly press <code>CHAOS</code>. Before that first reroll, <code>A/B</code> stays on the original view instead of pulling a hidden preview forward.
         </p>
         <p>
           Once a Chaos preview exists, both <code>Vandalize Sequence</code> and <code>Wreck Pattern</code> show the current seed in the page footer just like the other seed-based generator flows; when you switch back to the untouched source, the footer reads <code>ORIGINAL</code>.
@@ -1611,7 +1686,7 @@
           The generator page uses a target matrix of direct layer toggles. The available targets are <code>Gate</code>, <code>G Offset</code>, <code>G Prob</code>, <code>Retrig</code>, <code>Length</code>, <code>L Range</code>, <code>L Prob</code>, <code>R Prob</code>, <code>Note</code>, <code>N Slide</code>, <code>N Range</code>, <code>N Prob</code>, <code>N Bypass</code>, and <code>Cond</code>, plus dedicated <code>All On</code> and <code>All Off</code> cells.
         </p>
         <p>
-          For <code>Note</code> and <code>N Range</code> targets, generated note-domain values now follow the active <code>Pivot</code>/<code>Span</code> window (span quantized by octave steps up to the configured maximum) instead of a single fixed hardcoded range.
+          For <code>Note</code> and <code>N Range</code> targets, generated note-domain values follow the active <code>Pivot</code>/<code>Span</code> window (span quantized by octave steps up to the configured maximum) instead of a single fixed hardcoded range.
         </p>
         <p>
           <code>Vandalize Sequence</code> is selection-aware like the other generators: if a persistent step selection exists it is used as the target area first; otherwise the generator falls back to the current sequence <em>First Step</em> / <em>Last Step</em> range. <code>Wreck Pattern</code> keeps the same non-destructive preview model, but expands the target to all Note tracks in the current pattern. With an explicit step selection, that selection is shared across the affected Note tracks; without one, each Note track uses its own <em>First Step</em> / <em>Last Step</em> window.
@@ -1645,7 +1720,7 @@
           <strong>Variation vs Amount:</strong> these controls are intentionally not identical. <code>Variation</code> (used by <em>Random</em> and <em>Acid</em>) is a per-step keep/replace control against the original material. <code>Amount</code> (used by <em>Chaos</em> and <em>Entropy</em>) is a global intensity control applied to enabled targets in the target matrix.
         </p>
         <p>
-          In the current strict flow, changing <code>target</code>/<code>selection</code>/<code>amount</code> does not auto-reroll Chaos. A new valid preview requires explicit <code>CHAOS</code> press; <code>APPLY</code> remains blocked until then. The page no longer auto-jumps back to <code>ORIGINAL</code> when those parameters change.
+          Changing <code>target</code>/<code>selection</code>/<code>amount</code> does not auto-reroll Chaos. A new valid preview requires explicit <code>CHAOS</code> press; <code>APPLY</code> remains blocked until then. The page stays in its current A/B view when those parameters change.
         </p>
         <p>
           Chaos context actions also expose register controls: <code>F1 = PIVOT</code>, <code>F2 = SPAN</code>, <code>F3 = ResetGen</code>, <code>F4 = Cancel</code>, <code>F5 = Apply</code>. <code>Pivot</code>/<code>Span</code> are persisted and reused on next entry.
@@ -1660,7 +1735,7 @@
           <code>System -&gt; Chaos Defaults</code> stores separate target matrices for <code>Seq Layers to Vandalize</code>, <code>Pat Layers to Wreck</code>, and <code>EntropyLayerToUnleash</code>. These defaults are loaded automatically when you enter <code>Vandalize Sequence</code>, <code>Wreck Pattern</code>, or non-Note <em>Entropy</em>.
         </p>
         <p>
-          The same settings area now also stores <code>EntropyLayerToUnleash</code>. Non-Note <em>Entropy</em> pages use their own target matrix. Each target can represent one or more concrete layers depending on track type:
+          The same settings area also stores <code>EntropyLayerToUnleash</code>. Non-Note <em>Entropy</em> pages use their own target matrix. Each target can represent one or more concrete layers depending on track type:
         </p>
         <table>
           <thead>
@@ -1688,7 +1763,7 @@
           </tbody>
         </table>
         <p>
-          Re-entering <code>Chaos</code>, including <code>Vandalize Sequence</code> and <code>Wreck Pattern</code>, now tears down the previous generator and builder explicitly before constructing the next one, avoiding stale-state instability on hardware.
+          Re-entering <code>Chaos</code>, including <code>Vandalize Sequence</code> and <code>Wreck Pattern</code>, tears down the previous generator and builder explicitly before constructing the next one, avoiding stale-state instability on hardware.
         </p>
         <p>
           <code>Vandalize Sequence</code> keeps its backup state local to the active Note sequence instead of carrying every Note track in the current pattern, reducing unnecessary memory pressure in the single-sequence path.
@@ -1697,7 +1772,7 @@
           <code>Wreck Pattern</code> keeps only the original target-step backups and regenerates its preview in place, reducing runtime memory pressure while preserving the same <code>A/B</code>, <code>Cancel</code> and <code>Apply</code> workflow.
         </p>
         <p>
-          Entering <code>Wreck Pattern</code> now opens a dedicated warning popup before the generator page. <code>F1</code> jumps to the <code>PROJ PAGE</code>, <code>F3</code> confirms <code>WRECK</code>, and <code>F5</code> cancels.
+          Entering <code>Wreck Pattern</code> opens a dedicated warning popup before the generator page. <code>F1</code> jumps to the <code>PROJ PAGE</code>, <code>F3</code> confirms <code>WRECK</code>, and <code>F5</code> cancels.
         </p>
         <p>
           WARNING: <code>Chaos -&gt; Wreck Pattern</code> is a wildly experimental feature: a pattern-wide chaos process that should be used only after saving your project.
@@ -1719,7 +1794,7 @@
           </tbody>
         </table>
         <p>
-          Euclidean keeps context actions focused on <code>ResetGen</code>, <code>Cancel</code>, and <code>Apply</code>; rerolling is explicit from the main page via <code>NEW EUCL</code> or encoder rotation (with no parameter key held).
+          Euclidean keeps context actions focused on <code>ResetGen</code>, <code>Cancel</code>, and <code>Apply</code>; rerolling is explicit from the main page via <code>NEW EUCL</code> or encoder rotation (with no parameter key held). Direct edits to <code>Offset</code>, <code>Steps</code>, or <code>Beats</code> also arm the preview, so setting the Euclidean shape and then pressing <code>Apply</code> works without first pressing <code>NEW EUCL</code>.
         </p>
         <p>
           In the Vinx line, <em>Euclidean</em> behaves much more like the other modern generators than it did in older upstream documentation: it supports <code>A/B</code> comparison directly on the main page, keeps <code>Beats &lt;= Steps</code> enforced even while randomizing, and is best used as a deliberate rhythm-construction tool rather than as a blind randomizer.
@@ -1746,10 +1821,13 @@
           Note: if steps are selected, <em>Random</em> applies to the selection only. On sequence pages where no steps are selected, entering <em>Random</em> first selects all available steps, so the generator effectively works on the full editable range rather than only the current pattern length.
         </p>
         <p>
-          All generators now enter on <code>ORIGINAL</code>; the first generated preview appears only after an explicit reroll action. After preview is armed, the footer shows <code>A/B</code> plus the editable parameters, and the display shows the full sequence with the current 16-step bank framed. On Note tracks, preview rendering remains layer-aware so visual cues match the active destination layer.
+          Random enters on <code>ORIGINAL</code>; the first generated preview appears only after an explicit reroll action. After preview is armed, the footer shows <code>A/B</code> plus the editable parameters, and the display shows the full sequence with the current 16-step bank framed. On Note tracks, preview rendering remains layer-aware so visual cues match the active destination layer.
         </p>
         <p>
           The easiest way to use <em>Random</em> in the Vinx fork is to treat it as a layer shaper rather than a total replacement generator: <code>Seed</code> chooses the base state, <code>Smooth</code> and <code>Bias</code> change the character of that state, <code>Range</code> limits how far it can push, and <code>Variation</code> decides how strongly the result departs from the original layer.
+        </p>
+        <p>
+          On the Note layer specifically, <code>Range</code> behaves like a musical span around the current register, while <code>Bias</code> shifts that center lower or higher. Generated notes are also weighted toward the center of that window, making small and medium range values easier to aim musically. Other Random layers keep the historical generic mapping.
         </p>
         <h4>Acid</h4>
         <p>
@@ -2070,7 +2148,7 @@
           The <em>User Scale</em> page edits the four project user scales. These can be chromatic or arbitrary voltage tables and are useful both for conventional tuning and for modular-specific CV-addressing tasks.
         </p>
         <p>
-          User-scale slots now default to <code>INIT1</code>..<code>INIT4</code>, and the same custom names are shown directly in all <code>Scale</code> selectors across project/sequence pages (instead of generic <code>User1</code>..<code>User4</code> labels when names are set).
+          User-scale slots default to <code>INIT1</code>..<code>INIT4</code>, and the same custom names are shown directly in all <code>Scale</code> selectors across project/sequence pages (instead of generic <code>User1</code>..<code>User4</code> labels when names are set).
         </p>
         <table>
           <thead>
@@ -2093,7 +2171,10 @@
           Note: the items defined in a user scale represent a single octave of the scale. The remaining octaves are inferred by repetition.
         </p>
         <p>
-          MIDI note capture on Note, Stochastic and Arpeggiator tracks follows the octave span of the active scale, so voltage-mode user scales are interpreted according to their own octave range instead of assuming fixed <code>1V/oct</code>. This is intended to make arbitrary voltage tables usable beyond plain Note sequencing as well, although additional real-hardware validation is still useful for these workflows.
+          MIDI note capture on Note, Stochastic and Arpeggiator tracks follows the octave span of the active scale, so voltage-mode user scales are interpreted according to their own octave range instead of assuming fixed <code>1V/oct</code>. Validation scope for these cross-track Voltage Mode workflows is tracked in <a href="#manual-validation-scope">Known Limits / Validation Scope</a>.
+        </p>
+        <p>
+          On Stochastic and Arpeggiator tracks, routed transpose stays inside the selected scale/root context on the covered paths instead of shifting the selected scale root chromatically. Explicit <code>Semitones</code> keeps the chromatic legacy behavior.
         </p>
         <p>
           Known limit: some Arp/Stochastic paths still rely on a 12-slot-per-octave data model, so user scales with <code>notesPerOctave &gt; 12</code> are not yet fully represented in every path.
@@ -2180,7 +2261,7 @@
           The <em>System</em> page groups calibration, settings save/restore, SD utilities, firmware update entry and user settings such as display brightness, screensaver and Launchpad behavior.
         </p>
         <p>
-          Entering <em>System</em> now lands on the <em>Settings</em> tab by default instead of <em>Calibration</em>. The startup page reports the standalone Vinx version string (<code>v0.4.3</code>) correctly.
+          Entering <em>System</em> lands on the <em>Settings</em> tab by default instead of <em>Calibration</em>.
         </p>
         <table>
           <thead>
@@ -2207,7 +2288,7 @@
           This persistent save writes the current machine settings state to flash memory, including any changes made in <code>Chaos Defaults</code>, so those values are restored again after reboot.
         </p>
         <p>
-          When leaving the <em>User Settings</em> tab after changing any user setting, including <code>Chaos Defaults</code>, the firmware now asks whether you want to save. This prompt appears both when moving to another <em>System</em> tab and when leaving the <em>System</em> page entirely. Choosing <code>NO</code> skips the save and continues the navigation. This automatic prompt applies to <em>User Settings</em>, not to <em>Calibration</em>.
+          When leaving the <em>User Settings</em> tab after changing any user setting, including <code>Chaos Defaults</code>, the firmware asks whether you want to save. This prompt appears both when moving to another <em>System</em> tab and when leaving the <em>System</em> page entirely. Choosing <code>NO</code> skips the save and continues the navigation. This automatic prompt applies to <em>User Settings</em>, not to <em>Calibration</em>.
         </p>
         <h4>Calibration</h4>
         <p>
@@ -2324,7 +2405,7 @@
           The Arpeggiator track can work both from programmed step content and from live input notes. Stochastic and Arpeggiator note entry also inherit the active scale logic, which is why scale and root-note settings matter even outside plain Note sequencing.
         </p>
         <p>
-          For these less standard note-entry workflows, especially with user scales in <code>Voltage Mode</code>, the current firmware is intended to behave correctly, but additional real-hardware validation is still useful.
+          For these less standard note-entry workflows, especially with user scales in <code>Voltage Mode</code>, refer to <a href="#manual-validation-scope">Known Limits / Validation Scope</a> for the current hardware-validation perimeter.
         </p>
 
         <h3 id="appendix-clock-input-modes">Clock Input Modes</h3>
@@ -2642,7 +2723,7 @@ Random Walk:  7 8 7 8 1 2 1 2 3 2 3 4 5 4 3 4 ...</code></pre>
           This section is aligned with the current Vinx fork implementation and updated together with firmware behavior changes.
         </p>
         <p>
-          In practice, the currently rewritten Launchpad workflow in this manual has been tested primarily on <code>Launchpad Mini MK3</code>. Other supported Launchpad models should still work, but broader re-validation across devices remains useful.
+          Validation status for Launchpad hardware coverage is tracked in <a href="#manual-validation-scope">Known Limits / Validation Scope</a>. This chapter uses <code>Launchpad Mini MK3</code> as the primary reference workflow.
         </p>
         <p>
           The following Launchpad controllers have been tested and are working:
@@ -2767,7 +2848,7 @@ Random Walk:  7 8 7 8 1 2 1 2 3 2 3 4 5 4 3 4 ...</code></pre>
           Launchpad scene LEDs do not currently expose a dedicated SOLO-only color state. Solo status is therefore read from behavior/context rather than a separate fixed SOLO color cue.
         </p>
         <p>
-          The <code>TOP 7</code> gesture is not a general global shortcut. In the current Vinx implementation it is used contextually on compatible Note editors and on Note-track rows in Performer Overview. On Note Gate pages it applies to the visible grid; on circuit-style Note pages it applies only to pads <code>1..16</code>, where it switches between the scale base note and the same note at octave <code>+5</code>. This behavior is now considered <strong>Legacy / Deprecated</strong> and is kept for compatibility.
+          The <code>TOP 7</code> gesture is not a general global shortcut. In the Vinx implementation it is used contextually on compatible Note editors and on Note-track rows in Performer Overview. On Note Gate pages it applies to the visible grid; on circuit-style Note pages it applies only to pads <code>1..16</code>, where it switches between the scale base note and the same note at octave <code>+5</code>. This behavior is considered <strong>Legacy / Deprecated</strong> and is kept for compatibility.
         </p>
         <p>
           Note: synced or latched mute launching is available from the panel <a href="#pages-performer">Performer</a> page, but not from the Launchpad surface in the current Vinx implementation.
@@ -2930,7 +3011,7 @@ Random Walk:  7 8 7 8 1 2 1 2 3 2 3 4 5 4 3 4 ...</code></pre>
           </tbody>
         </table>
         <p>
-          Activation is now consistent: all generator pads enter on <code>ORIGINAL</code> at first press, and a second action on the selected generator triggers first preview generation.
+          Activation is consistent: all generator pads enter on <code>ORIGINAL</code> at first press, and a second action on the selected generator triggers first preview generation.
         </p>
         <p>
           Pressing the selected generator pad rerolls in place: <code>NEW RAND</code> on <em>Random</em>/<em>Acid</em>, <code>CHAOS</code> on <em>Vandalize</em>/<em>Wreck</em>/<em>Entropy</em>, <code>NEW EUCL</code> on <em>Euclidean</em>. In this split, <em>Entropy</em> uses the same <code>ORIGINAL -&gt; CHAOS -&gt; A/B</code> logic as Chaos but stays track-local on non-Note tracks.
@@ -2954,7 +3035,7 @@ Random Walk:  7 8 7 8 1 2 1 2 3 2 3 4 5 4 3 4 ...</code></pre>
           Operational intent: use the 16 knobs to edit <code>Note</code> values and the 16 pads to toggle <code>Gate</code> states on the currently visible bank (<code>steps 1..16</code> in the current section).
         </p>
         <p>
-          Current validation by the maintainer has been done on <em>Launch Control XL</em>. <em>BeatStep Pro</em> support is implemented with documented mapping, but still requires dedicated on-hardware validation on a real unit.
+          Validation status for <em>Launch Control XL</em> and <em>BeatStep Pro</em> on this workflow is maintained in <a href="#manual-validation-scope">Known Limits / Validation Scope</a>.
         </p>
         <p>
           Entry/exit is explicit through controller-side <code>Prev + Next</code> together. On <em>Launch Control XL</em> this is <code>Track Select &lt; + &gt;</code>. In common <em>BeatStep Pro</em> templates it is <code>Ptn 1 + Ptn 2</code>.
@@ -3055,7 +3136,7 @@ Random Walk:  7 8 7 8 1 2 1 2 3 2 3 4 5 4 3 4 ...</code></pre>
           <tbody>
             <tr><td style="text-align: left"><em>Random</em></td><td style="text-align: left">Seed change only.</td></tr>
             <tr><td style="text-align: left"><em>Acid Layer</em> / <em>Acid Phrase</em></td><td style="text-align: left">Seed change only.</td></tr>
-            <tr><td style="text-align: left"><em>Euclidean</em></td><td style="text-align: left"><code>NEW EUCL</code> reroll.</td></tr>
+            <tr><td style="text-align: left"><em>Euclidean</em></td><td style="text-align: left"><code>NEW EUCL</code> reroll with no parameter key held; <code>Offset</code>/<code>Steps</code>/<code>Beats</code> edits arm preview directly when their parameter key is held.</td></tr>
             <tr><td style="text-align: left"><em>Vandalize</em> / <em>Wreck</em></td><td style="text-align: left">Target-matrix navigation; with <code>F2</code> held, edits <code>Amount</code>.</td></tr>
             <tr><td style="text-align: left"><em>Entropy</em></td><td style="text-align: left">Target-matrix navigation; with <code>F2</code> held, edits <code>Amount</code>.</td></tr>
           </tbody>
@@ -3098,7 +3179,7 @@ Random Walk:  7 8 7 8 1 2 1 2 3 2 3 4 5 4 3 4 ...</code></pre>
           The <em>Desktop Simulator</em> accepts separate DIN and USB MIDI port assignments from the command line, starts with MIDI disabled by default, and exposes lightweight status indicators plus terminal tracing for MIDI and digital outputs. This makes it useful not just as a demo build, but as a real development and testing tool for clock, MIDI, USB, and Launchpad behavior.
         </p>
         <p>
-          The best-validated USB Launchpad workflow is currently on <code>macOS / OS X</code> with <code>Launchpad Mini MK3</code>. Broader validation across other Launchpad models and operating systems is still useful.
+          Desktop Simulator USB MIDI validation scope (including OS/device coverage) is tracked in <a href="#manual-validation-scope">Known Limits / Validation Scope</a>.
         </p>
         <p>
           For concrete build and launch commands, see the <a href="../build-guide/index.html">Build Guide</a> and the <a href="../testdrive/index.html">Web Simulator</a> page.
@@ -3192,7 +3273,7 @@ Random Walk:  7 8 7 8 1 2 1 2 3 2 3 4 5 4 3 4 ...</code></pre>
           After the firmware is written to flash memory, it is verified again to ensure it was written correctly. If verification fails, the firmware is erased from flash memory. In that state the sequencer will always boot back into the bootloader, allowing a different firmware image to be loaded.
         </p>
         <p>
-          SD boot robustness note (current Vinx line): startup tolerances for slower cards were increased (longer SD-init wait window and watchdog feed during long init waits), which reduces loading-screen reboot loops on borderline media while keeping runtime watchdog behavior strict.
+          SD boot robustness note: startup tolerances for slower cards include a longer SD-init wait window and watchdog feed during long init waits, reducing loading-screen reboot loops on borderline media while keeping runtime watchdog behavior strict.
         </p>
         <p>
           For release history and fork-specific changes, see the <a href="../features/index.html">Features</a> page.
@@ -3206,548 +3287,7 @@ Random Walk:  7 8 7 8 1 2 1 2 3 2 3 4 5 4 3 4 ...</code></pre>
         </aside>
       </div>
       <script src="../theme.js"></script>
-      <script>
-        (function() {
-          var header = document.getElementById('header_wrap');
-          function updateSidebarOffset() {
-            if (!header) {
-              return;
-            }
-            document.documentElement.style.setProperty('--manual-sidebar-offset', (header.offsetHeight + 20) + 'px');
-          }
-
-          updateSidebarOffset();
-          window.addEventListener('resize', updateSidebarOffset);
-
-          var sidebarLinks = Array.prototype.slice.call(document.querySelectorAll('.manual-sidebar a[href^="#"]'));
-          var searchInput = document.getElementById('manual-search-input');
-          var searchResults = document.getElementById('manual-search-results');
-          var searchEmpty = document.getElementById('manual-search-empty');
-          var manualBody = document.querySelector('.manual-body');
-          var searchMinimap = document.getElementById('manual-search-minimap');
-          var searchMinimapViewport = document.getElementById('manual-search-minimap-viewport');
-          var activeSearchId = null;
-          var currentSearchQuery = '';
-          var currentSearchMatches = [];
-          var searchMinimapMarkers = [];
-          if (!sidebarLinks.length) {
-            return;
-          }
-
-          var linkMap = new Map();
-          var searchIndex = [];
-
-          function headingLevel(node) {
-            if (!node || !node.tagName) {
-              return null;
-            }
-            var match = node.tagName.match(/^H([2-6])$/i);
-            return match ? parseInt(match[1], 10) : null;
-          }
-
-          function scopedSearchNodes(target) {
-            if (!target) {
-              return [];
-            }
-
-            var level = headingLevel(target);
-            if (!level) {
-              return [target];
-            }
-
-            var nodes = [target];
-            var node = target.nextElementSibling;
-
-            while (node) {
-              var nodeLevel = headingLevel(node);
-              if (nodeLevel && nodeLevel <= level) {
-                break;
-              }
-              nodes.push(node);
-              node = node.nextElementSibling;
-            }
-
-            return nodes;
-          }
-
-          function scopedSearchText(target) {
-            return scopedSearchNodes(target)
-              .map(function(node) {
-                return node.textContent.replace(/\s+/g, ' ').trim();
-              })
-              .join(' ')
-              .trim();
-          }
-
-          function normalizeText(value) {
-            return (value || '').replace(/\s+/g, ' ').trim();
-          }
-
-          function directSidebarAnchor(li) {
-            if (!li) {
-              return null;
-            }
-            for (var i = 0; i < li.children.length; i++) {
-              var child = li.children[i];
-              if (child.tagName === 'A' && child.getAttribute('href') && child.getAttribute('href').charAt(0) === '#') {
-                return child;
-              }
-            }
-            return null;
-          }
-
-          function sidebarLinkPath(link) {
-            var path = [normalizeText(link.textContent)];
-            var currentLi = link.parentElement && link.parentElement.tagName === 'LI' ? link.parentElement : null;
-
-            while (currentLi) {
-              var parentList = currentLi.parentElement;
-              if (!parentList) {
-                break;
-              }
-              var parentLi = parentList.parentElement && parentList.parentElement.tagName === 'LI' ? parentList.parentElement : null;
-              if (!parentLi) {
-                break;
-              }
-              var parentLink = directSidebarAnchor(parentLi);
-              if (!parentLink) {
-                break;
-              }
-              path.unshift(normalizeText(parentLink.textContent));
-              currentLi = parentLi;
-            }
-
-            return path;
-          }
-
-          sidebarLinks.forEach(function(link) {
-            var id = link.getAttribute('href').slice(1);
-            var target = document.getElementById(id);
-            if (target) {
-              linkMap.set(target, link);
-              var title = normalizeText(link.textContent);
-              var path = sidebarLinkPath(link);
-              var pathLabel = path.join(' -> ');
-              var context = scopedSearchText(target);
-              var entry = {
-                id: id,
-                title: title,
-                path: path,
-                pathLabel: pathLabel,
-                text: (title + ' ' + pathLabel + ' ' + context).toLowerCase()
-              };
-              searchIndex.push(entry);
-            }
-          });
-
-          function clearSearchResults() {
-            activeSearchId = null;
-            currentSearchQuery = '';
-            currentSearchMatches = [];
-            if (searchResults) {
-              searchResults.innerHTML = '';
-              searchResults.hidden = true;
-            }
-            if (searchEmpty) {
-              searchEmpty.hidden = true;
-            }
-            clearSearchHighlights();
-            clearSearchMinimap();
-          }
-
-          function clearSearchHighlights() {
-            Array.prototype.slice.call(document.querySelectorAll('.manual-search-hit')).forEach(function(element) {
-              element.classList.remove('manual-search-hit');
-            });
-            clearSearchMinimapHits();
-          }
-
-          function escapeRegExp(value) {
-            return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          }
-
-          function clamp01(value) {
-            return Math.max(0, Math.min(1, value));
-          }
-
-          function clearSearchMinimap() {
-            if (!searchMinimap) {
-              return;
-            }
-            Array.prototype.slice.call(searchMinimap.querySelectorAll('.manual-search-minimap-marker')).forEach(function(marker) {
-              marker.remove();
-            });
-            searchMinimapMarkers = [];
-            searchMinimap.hidden = true;
-            updateSearchMinimapViewport();
-          }
-
-          function clearSearchMinimapHits() {
-            searchMinimapMarkers.forEach(function(entry) {
-              entry.element.classList.remove('is-hit');
-            });
-          }
-
-          function setSearchMinimapActiveBlock(block) {
-            searchMinimapMarkers.forEach(function(entry) {
-              entry.element.classList.toggle('is-active', !!block && entry.block === block);
-            });
-          }
-
-          function setSearchMinimapHitBlocks(blocks) {
-            var hits = new Set(blocks || []);
-            searchMinimapMarkers.forEach(function(entry) {
-              entry.element.classList.toggle('is-hit', hits.has(entry.block));
-            });
-          }
-
-          function searchMinimapBlocksForMatch(matchId) {
-            return searchMinimapMarkers
-              .filter(function(entry) { return entry.matchId === matchId; })
-              .map(function(entry) { return entry.block; });
-          }
-
-          function updateSearchMinimapViewport() {
-            if (!searchMinimap || !searchMinimapViewport || searchMinimap.hidden || !manualBody) {
-              return;
-            }
-
-            var contentTop = window.scrollY + manualBody.getBoundingClientRect().top;
-            var contentHeight = Math.max(1, manualBody.scrollHeight);
-
-            var viewStart = clamp01((window.scrollY - contentTop) / contentHeight);
-            var viewEnd = clamp01((window.scrollY + window.innerHeight - contentTop) / contentHeight);
-            if (viewEnd <= viewStart) {
-              viewEnd = Math.min(1, viewStart + 0.02);
-            }
-
-            searchMinimapViewport.style.top = (viewStart * 100) + '%';
-            searchMinimapViewport.style.height = ((viewEnd - viewStart) * 100) + '%';
-          }
-
-          function closestSearchHighlightBlock(node, root) {
-            var element = node && node.nodeType === Node.ELEMENT_NODE ? node : node && node.parentElement;
-            while (element && element !== root) {
-              if (element.matches && element.matches('p, li, td, th, pre, h3, h4, h5, h6')) {
-                return element;
-              }
-              element = element.parentElement;
-            }
-            return root && root.matches && root.matches('p, li, td, th, pre, h3, h4, h5, h6') ? root : null;
-          }
-
-          function findMatchingBlocksInRoots(roots, query) {
-            if (!query) {
-              return [];
-            }
-
-            var terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-            if (!terms.length) {
-              return [];
-            }
-
-            var blocks = [];
-            var seenBlocks = new Set();
-
-            roots.forEach(function(root) {
-              var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-                acceptNode: function(node) {
-                  if (!node.nodeValue || !node.nodeValue.trim()) {
-                    return NodeFilter.FILTER_REJECT;
-                  }
-                  var parent = node.parentNode;
-                  if (!parent || /^(SCRIPT|STYLE|MARK)$/i.test(parent.nodeName)) {
-                    return NodeFilter.FILTER_REJECT;
-                  }
-                  var nodeText = node.nodeValue.toLowerCase();
-                  return terms.some(function(term) {
-                    return nodeText.indexOf(term) !== -1;
-                  }) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-                }
-              });
-
-              while (walker.nextNode()) {
-                var block = closestSearchHighlightBlock(walker.currentNode, root);
-                if (block && !seenBlocks.has(block)) {
-                  seenBlocks.add(block);
-                  blocks.push(block);
-                }
-              }
-            });
-
-            return blocks.filter(function(block) {
-              var blockText = (block.textContent || '').toLowerCase();
-              return terms.every(function(term) {
-                return blockText.indexOf(term) !== -1;
-              });
-            });
-          }
-
-          function blinkAndKeepSearchHighlight(block) {
-            if (!block) {
-              return;
-            }
-            block.classList.remove('manual-search-hit');
-            void block.offsetWidth;
-            block.classList.add('manual-search-hit');
-          }
-
-          function renderSearchMinimap(matches, query) {
-            if (!searchMinimap || !manualBody) {
-              return;
-            }
-
-            var entries = [];
-            var seenBlocks = new Set();
-            clearSearchMinimap();
-
-            matches.forEach(function(match) {
-              var target = document.getElementById(match.id);
-              if (!target) {
-                return;
-              }
-              var blocks = findMatchingBlocksInRoots(scopedSearchNodes(target), query);
-              blocks.forEach(function(block) {
-                if (seenBlocks.has(block)) {
-                  return;
-                }
-                seenBlocks.add(block);
-                entries.push({
-                  block: block,
-                  matchId: match.id,
-                  pathLabel: match.pathLabel || match.title
-                });
-              });
-            });
-
-            if (!entries.length) {
-              return;
-            }
-
-            searchMinimap.hidden = false;
-
-            var contentTop = window.scrollY + manualBody.getBoundingClientRect().top;
-            var contentHeight = Math.max(1, manualBody.scrollHeight);
-
-            entries.sort(function(a, b) {
-              var topA = window.scrollY + a.block.getBoundingClientRect().top;
-              var topB = window.scrollY + b.block.getBoundingClientRect().top;
-              return topA - topB;
-            });
-
-            entries.forEach(function(entry) {
-              var block = entry.block;
-              var blockTop = window.scrollY + block.getBoundingClientRect().top - contentTop;
-              var ratio = clamp01(blockTop / contentHeight);
-              var marker = document.createElement('button');
-              marker.type = 'button';
-              marker.className = 'manual-search-minimap-marker';
-              marker.style.top = (ratio * 100) + '%';
-              marker.title = entry.pathLabel;
-              marker.setAttribute('aria-label', 'Jump to search result: ' + entry.pathLabel);
-              marker.addEventListener('click', function(event) {
-                event.preventDefault();
-                if (entry.matchId) {
-                  activeSearchId = entry.matchId;
-                  renderSearchResults(currentSearchMatches, currentSearchQuery);
-                }
-                var target = entry.matchId ? document.getElementById(entry.matchId) : null;
-                var highlightResult = (target && currentSearchQuery) ? highlightSearchTerms(target, currentSearchQuery) : null;
-                var scopedBlocks = highlightResult ? highlightResult.blocks : searchMinimapBlocksForMatch(entry.matchId);
-                clearSearchHighlights();
-                scopedBlocks.forEach(function(hitBlock) {
-                  hitBlock.classList.add('manual-search-hit');
-                });
-                blinkAndKeepSearchHighlight(block);
-                setSearchMinimapHitBlocks(scopedBlocks.length ? scopedBlocks : [block]);
-                setSearchMinimapActiveBlock(block);
-                block.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                if (entry.matchId && window.location.hash !== '#' + entry.matchId) {
-                  history.replaceState(null, '', '#' + entry.matchId);
-                }
-              });
-              searchMinimap.appendChild(marker);
-              searchMinimapMarkers.push({
-                element: marker,
-                block: block,
-                matchId: entry.matchId
-              });
-            });
-
-            var allBlocks = entries.map(function(entry) { return entry.block; });
-            if (activeSearchId) {
-              var activeBlocks = searchMinimapBlocksForMatch(activeSearchId);
-              setSearchMinimapHitBlocks(activeBlocks.length ? activeBlocks : allBlocks);
-              setSearchMinimapActiveBlock(activeBlocks.length ? activeBlocks[0] : null);
-            } else {
-              setSearchMinimapHitBlocks(allBlocks);
-            }
-
-            updateSearchMinimapViewport();
-          }
-
-          function highlightSearchTerms(target, query) {
-            if (!target || !query) {
-              return null;
-            }
-
-            clearSearchHighlights();
-
-            var blocks = findMatchingBlocksInRoots(scopedSearchNodes(target), query);
-            blocks.forEach(function(block) {
-              block.classList.add('manual-search-hit');
-            });
-
-            return {
-              first: blocks.length ? blocks[0] : null,
-              blocks: blocks
-            };
-          }
-
-          function renderSearchResults(matches, query) {
-            if (!searchResults) {
-              return;
-            }
-
-            currentSearchMatches = matches.slice();
-            searchResults.innerHTML = '';
-            matches.slice(0, 12).forEach(function(match) {
-              var item = document.createElement('li');
-              var link = document.createElement('a');
-              link.href = '#' + match.id;
-              link.textContent = match.pathLabel || match.title;
-              if (match.id === activeSearchId) {
-                link.classList.add('is-active');
-              }
-              link.addEventListener('click', function(event) {
-                event.preventDefault();
-                activeSearchId = match.id;
-                renderSearchResults(currentSearchMatches, currentSearchQuery);
-                var target = document.getElementById(match.id);
-                var highlightTarget = null;
-                var scopedBlocks = [];
-                if (currentSearchQuery) {
-                  var scope = target || null;
-                  var highlightResult = highlightSearchTerms(scope, currentSearchQuery);
-                  highlightTarget = highlightResult ? highlightResult.first : null;
-                  scopedBlocks = highlightResult ? highlightResult.blocks : [];
-                  if (!scopedBlocks.length) {
-                    scopedBlocks = searchMinimapBlocksForMatch(match.id);
-                  }
-                  setSearchMinimapHitBlocks(scopedBlocks);
-                  setSearchMinimapActiveBlock(highlightTarget || (scopedBlocks.length ? scopedBlocks[0] : null));
-                }
-                if (highlightTarget || target) {
-                  (highlightTarget || target).scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                if (target && window.location.hash !== '#' + match.id) {
-                  history.replaceState(null, '', '#' + match.id);
-                }
-              });
-              item.appendChild(link);
-              searchResults.appendChild(item);
-            });
-
-            searchResults.hidden = matches.length === 0;
-            if (searchEmpty) {
-              searchEmpty.hidden = matches.length !== 0;
-            }
-          }
-
-          if (searchInput) {
-            searchInput.addEventListener('input', function() {
-              var queryText = searchInput.value.trim();
-              var query = queryText.toLowerCase();
-              if (!queryText) {
-                clearSearchResults();
-                return;
-              }
-
-              currentSearchQuery = queryText;
-
-              var terms = query.split(/\s+/).filter(Boolean);
-              var matches = searchIndex.filter(function(entry) {
-                return terms.every(function(term) {
-                  return entry.text.indexOf(term) !== -1;
-                });
-              });
-
-              if (!matches.some(function(entry) { return entry.id === activeSearchId; })) {
-                activeSearchId = matches.length ? matches[0].id : null;
-              }
-              renderSearchResults(matches, queryText);
-              renderSearchMinimap(matches, queryText);
-            });
-          }
-
-          sidebarLinks.forEach(function(link) {
-            link.addEventListener('click', function() {
-              if (!currentSearchQuery) {
-                return;
-              }
-              var id = (link.getAttribute('href') || '').replace(/^#/, '');
-              if (!id || id === 'header_wrap') {
-                return;
-              }
-              var exists = currentSearchMatches.some(function(match) { return match.id === id; });
-              if (!exists) {
-                return;
-              }
-              activeSearchId = id;
-              renderSearchResults(currentSearchMatches, currentSearchQuery);
-              var target = document.getElementById(id);
-              var highlightResult = highlightSearchTerms(target, currentSearchQuery);
-              var blocks = highlightResult ? highlightResult.blocks : searchMinimapBlocksForMatch(id);
-              setSearchMinimapHitBlocks(blocks);
-              setSearchMinimapActiveBlock((highlightResult && highlightResult.first) || (blocks.length ? blocks[0] : null));
-            });
-          });
-
-          window.addEventListener('scroll', updateSearchMinimapViewport, { passive: true });
-          window.addEventListener('resize', updateSearchMinimapViewport);
-          updateSearchMinimapViewport();
-
-          if (!('IntersectionObserver' in window)) {
-            return;
-          }
-
-          var activeLink = null;
-          function setActive(link) {
-            if (activeLink === link) {
-              return;
-            }
-            if (activeLink) {
-              activeLink.classList.remove('is-active');
-            }
-            activeLink = link;
-            if (activeLink) {
-              activeLink.classList.add('is-active');
-            }
-          }
-
-          var observer = new IntersectionObserver(function(entries) {
-            var visible = entries
-              .filter(function(entry) { return entry.isIntersecting; })
-              .sort(function(a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
-
-            if (visible.length) {
-              setActive(linkMap.get(visible[0].target) || null);
-            }
-          }, {
-            rootMargin: '-18% 0px -70% 0px',
-            threshold: [0, 1]
-          });
-
-          linkMap.forEach(function(_, target) {
-            observer.observe(target);
-          });
-
-          var fallback = document.getElementById('introduction');
-          if (fallback && linkMap.has(fallback)) {
-            setActive(linkMap.get(fallback));
-          }
-        })();
-      </script>
+      <script src="../manual.js"></script>
     </main>
   </div>
 

@@ -15,6 +15,8 @@
 
 class FileManager {
 public:
+    static constexpr size_t SlotCacheSize = 128;
+
     static void init();
 
     static bool volumeAvailable();
@@ -108,7 +110,7 @@ private:
     static uint32_t _volumeState;
     static uint32_t _nextVolumeStateCheckTicks;
 
-    static std::array<CachedSlotInfo, 4> _cachedSlotInfos;
+    static std::array<CachedSlotInfo, SlotCacheSize> _cachedSlotInfos;
     static uint32_t _cachedSlotInfoTicket;
 
     static TaskExecuteCallback _taskExecuteCallback;

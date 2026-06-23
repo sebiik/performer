@@ -21,7 +21,7 @@ BaseSetting *UserSettings::get(int key) {
     return _settings[key];
 }
 
-std::vector<BaseSetting *> UserSettings::all() {
+const std::vector<BaseSetting *> &UserSettings::all() const {
     return _settings;
 }
 

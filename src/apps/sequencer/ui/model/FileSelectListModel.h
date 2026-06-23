@@ -33,9 +33,16 @@ public:
     virtual void setSelectedScale(int defaultScale, bool force = false) override {};
 
 private:
+    static constexpr int SlotCount = 128;
+
     void formatName(int row, StringBuilder &str) const {
         if (FileManager::busy()) {
             str("%d: (busy)", row + 1);
+            return;
+        }
+
+        if (row < 0 || row >= SlotCount) {
+            str("%d: (empty)", row + 1);
             return;
         }
 

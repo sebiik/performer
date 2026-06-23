@@ -4,11 +4,66 @@
 
 #include "apps/sequencer/model/Scale.cpp"
 #include "apps/sequencer/model/UserScale.cpp"
+#include "apps/sequencer/model/UserSettings.h"
 
 #include <array>
 #include <cstdint>
+#include <cstring>
+#include <vector>
 
 UNIT_TEST("Scale") {
+
+    CASE("defensive scale and note lookup") {
+        expectEqual(Scale::name(-1), "?");
+        expectEqual(Scale::name(Scale::Count), "?");
+        expectEqual(Scale::get(-1).notesPerOctave(), Scale::get(0).notesPerOctave());
+        expectEqual(Scale::get(Scale::Count).notesPerOctave(), Scale::get(Scale::Count - 1).notesPerOctave());
+
+        FixedStringBuilder<8> note;
+        Types::printNote(note, -1);
+        expectEqual((const char *)note, "B");
+        note.reset();
+        Types::printNote(note, 12);
+        expectEqual((const char *)note, "C");
+    }
+
+    CASE("defensive user setting menu key") {
+        ChaosPivotNoteSetting pivot;
+        pivot.setValue(13);
+        expectEqual(pivot.getMenuItemKey().c_str(), "edit");
+    }
+
+    CASE("defensive user scale read") {
+        std::vector<uint8_t> data;
+        VersionedSerializedWriter writer([&data] (const void *source, size_t len) {
+            const auto *bytes = static_cast<const uint8_t *>(source);
+            data.insert(data.end(), bytes, bytes + len);
+        }, ProjectVersion::Latest);
+
+        char name[UserScale::NameLength + 1];
+        std::memset(name, 0, sizeof(name));
+        UserScale::Mode mode = UserScale::Mode::Chromatic;
+        uint8_t invalidSize = 0;
+        writer.write(name, sizeof(name));
+        writer.write(mode);
+        writer.write(invalidSize);
+        writer.writeHash();
+
+        size_t offset = 0;
+        VersionedSerializedReader reader([&data, &offset] (void *target, size_t len) {
+            std::memcpy(target, data.data() + offset, len);
+            offset += len;
+        }, ProjectVersion::Latest);
+
+        UserScale scale;
+        expectTrue(scale.read(reader));
+        expectEqual(scale.size(), 1);
+        expectEqual(scale.notesPerOctave(), 1);
+
+        FixedStringBuilder<8> note;
+        scale.noteName(note, 0, 0, Scale::Long);
+        expectEqual((const char *)note, "C+0");
+    }
 
     CASE("noteName/noteToVolts") {
         for (int i = 0; i < Scale::Count; ++i) {

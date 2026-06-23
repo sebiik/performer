@@ -3,6 +3,7 @@
 #include "ui/pages/Pages.h"
 #include "ui/painters/WindowPainter.h"
 
+#include "core/hash/FnvHash.h"
 #include "core/utils/StringBuilder.h"
 
 #ifdef PLATFORM_STM32
@@ -48,24 +49,16 @@ SystemPage::SystemPage(PageManager &manager, PageContext &context) :
 }
 
 void SystemPage::enter() {
+    _calibrationOutputActive = false;
     setOutputIndex(_project.selectedTrackIndex());
     setMode(Mode::Settings);
     updateUserSettingsSnapshot();
 
-    _engine.suspend();
-    _engine.setGateOutput(0xff);
-    _engine.setGateOutputOverride(true);
-    _engine.setCvOutputOverride(true);
-
     _encoderDownTicks = 0;
-
-    updateOutputs();
 }
 
 void SystemPage::exit() {
-    _engine.setGateOutputOverride(false);
-    _engine.setCvOutputOverride(false);
-    _engine.resume();
+    disableCalibrationOutput();
 }
 
 void SystemPage::draw(Canvas &canvas) {
@@ -274,10 +267,16 @@ bool SystemPage::requestLeave(std::function<void()> onContinue) {
 }
 
 void SystemPage::setMode(Mode mode) {
+    if (_mode == Mode::Calibration && mode != Mode::Calibration) {
+        disableCalibrationOutput();
+    }
+
     _mode = mode;
     switch (_mode) {
     case Mode::Calibration:
         setListModel(_cvOutputListModel);
+        enableCalibrationOutput();
+        updateOutputs();
         break;
     case Mode::Utilities:
         setListModel(_utilitiesListModel);
@@ -299,6 +298,29 @@ void SystemPage::setMode(Mode mode) {
 void SystemPage::setOutputIndex(int index) {
     _outputIndex = index;
     _cvOutputListModel.setCvOutput(_settings.calibration().cvOutput(index));
+}
+
+void SystemPage::enableCalibrationOutput() {
+    if (_calibrationOutputActive) {
+        return;
+    }
+
+    _engine.suspend();
+    _engine.setGateOutput(0xff);
+    _engine.setGateOutputOverride(true);
+    _engine.setCvOutputOverride(true);
+    _calibrationOutputActive = true;
+}
+
+void SystemPage::disableCalibrationOutput() {
+    if (!_calibrationOutputActive) {
+        return;
+    }
+
+    _engine.setGateOutputOverride(false);
+    _engine.setCvOutputOverride(false);
+    _engine.resume();
+    _calibrationOutputActive = false;
 }
 
 void SystemPage::updateOutputs() {
@@ -390,18 +412,23 @@ void SystemPage::restoreSettings() {
 }
 
 void SystemPage::saveSettingsToFlash(std::function<void()> onDone) {
-    _engine.suspend();
+    const bool resumeEngineOnDone = !_engine.isSuspended();
+    if (resumeEngineOnDone) {
+        _engine.suspend();
+    }
     _manager.pages().busy.show("SAVING SETTINGS ...");
 
     FileManager::task([this] () {
         _model.settings().writeToFlash();
         return fs::OK;
-    }, [this, onDone] (fs::Error result) {
+    }, [this, onDone, resumeEngineOnDone] (fs::Error result) {
         updateUserSettingsSnapshot();
         showMessage("SETTINGS SAVED");
         // TODO lock ui mutex
         _manager.pages().busy.close();
-        _engine.resume();
+        if (resumeEngineOnDone) {
+            _engine.resume();
+        }
         if (onDone) {
             onDone();
         }
@@ -409,12 +436,15 @@ void SystemPage::saveSettingsToFlash(std::function<void()> onDone) {
 }
 
 void SystemPage::backupSettingsToFile() {
-    _engine.suspend();
+    const bool resumeEngineOnDone = !_engine.isSuspended();
+    if (resumeEngineOnDone) {
+        _engine.suspend();
+    }
     _manager.pages().busy.show("BACKING UP SETTINGS ...");
 
     FileManager::task([this] () {
         return FileManager::writeSettings(_model.settings(), Settings::Filename);
-    }, [this] (fs::Error result) {
+    }, [this, resumeEngineOnDone] (fs::Error result) {
         if (result == fs::OK) {
             showMessage("SETTINGS BACKED UP");
         } else {
@@ -422,17 +452,22 @@ void SystemPage::backupSettingsToFile() {
         }
         // TODO lock ui mutex
         _manager.pages().busy.close();
-        _engine.resume();
+        if (resumeEngineOnDone) {
+            _engine.resume();
+        }
     });
 }
 
 void SystemPage::restoreSettingsFromFile() {
-    _engine.suspend();
+    const bool resumeEngineOnDone = !_engine.isSuspended();
+    if (resumeEngineOnDone) {
+        _engine.suspend();
+    }
     _manager.pages().busy.show("RESTORING SETTINGS ...");
 
     FileManager::task([this] () {
         return FileManager::readSettings(_model.settings(), Settings::Filename);
-    }, [this] (fs::Error result) {
+    }, [this, resumeEngineOnDone] (fs::Error result) {
         if (result == fs::OK) {
             showMessage("SETTINGS RESTORED");
         } else if (result == fs::INVALID_CHECKSUM) {
@@ -444,7 +479,9 @@ void SystemPage::restoreSettingsFromFile() {
         }
         // TODO lock ui mutex
         _manager.pages().busy.close();
-        _engine.resume();
+        if (resumeEngineOnDone) {
+            _engine.resume();
+        }
     });
 }
 
@@ -482,11 +519,11 @@ void SystemPage::showChaosDefaults() {
 }
 
 void SystemPage::updateUserSettingsSnapshot() {
-    _userSettingsSnapshot = serializeUserSettings();
+    _userSettingsSnapshotHash = userSettingsHash();
 }
 
 bool SystemPage::userSettingsDirty() const {
-    return serializeUserSettings() != _userSettingsSnapshot;
+    return userSettingsHash() != _userSettingsSnapshotHash;
 }
 
 bool SystemPage::requestSaveIfNeeded(std::function<void()> onContinue) {
@@ -508,16 +545,15 @@ bool SystemPage::requestSaveIfNeeded(std::function<void()> onContinue) {
     return false;
 }
 
-std::vector<uint8_t> SystemPage::serializeUserSettings() const {
-    std::vector<uint8_t> data;
+uint32_t SystemPage::userSettingsHash() const {
+    FnvHash hash;
 
-    VersionedSerializedWriter writer([&data] (const void *source, size_t len) {
-        const auto *bytes = static_cast<const uint8_t *>(source);
-        data.insert(data.end(), bytes, bytes + len);
+    VersionedSerializedWriter writer([&hash] (const void *source, size_t len) {
+        hash(source, len);
     }, Settings::Version);
 
     _settings.userSettings().write(writer);
     writer.writeHash();
 
-    return data;
+    return hash.result();
 }

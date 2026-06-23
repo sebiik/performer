@@ -9,7 +9,6 @@
 #include "model/Settings.h"
 
 #include <functional>
-#include <vector>
 
 class SystemPage : public ListPage {
 public:
@@ -38,6 +37,8 @@ private:
 
     void setMode(Mode mode);
     void setOutputIndex(int index);
+    void enableCalibrationOutput();
+    void disableCalibrationOutput();
     void updateOutputs();
 
     void executeUtilityItem(UtilitiesListModel::Item item);
@@ -60,7 +61,7 @@ private:
     void restoreSettingsFromFile();
     void updateUserSettingsSnapshot();
     bool userSettingsDirty() const;
-    std::vector<uint8_t> serializeUserSettings() const;
+    uint32_t userSettingsHash() const;
 
     Mode _mode = Mode::Calibration;
     Settings &_settings;
@@ -73,5 +74,6 @@ private:
     //LpSettingsListModel _lpSettingsListModel;
 
     uint32_t _encoderDownTicks;
-    std::vector<uint8_t> _userSettingsSnapshot;
+    uint32_t _userSettingsSnapshotHash = 0;
+    bool _calibrationOutputActive = false;
 };

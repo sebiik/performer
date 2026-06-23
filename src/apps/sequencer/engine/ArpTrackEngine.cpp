@@ -34,6 +34,10 @@ static int wrappedPitchSlotIndex(int note, int slotCount) {
     return index;
 }
 
+static bool useLegacySemitoneBypass(const Scale &scale, bool forceScaleTransposition) {
+    return !forceScaleTransposition && &scale == &Scale::get(0);
+}
+
 bool sortTaskByProbRev(const ArpStep& lhs, const ArpStep& rhs) {
     return lhs.probability() > rhs.probability();
 }
@@ -149,12 +153,12 @@ static int evalTransposition(const Scale &scale, int octave, int transpose) {
 }
 
 // evaluate note voltage
-static float evalStepNote(const ArpSequence::Step &step, int probabilityBias, const Scale &scale, int rootNote, int octave, int transpose, ArpSequence sequence, bool useVariation = true) {
+static float evalStepNote(const ArpSequence::Step &step, int probabilityBias, const Scale &scale, int rootNote, int octave, int transpose, ArpSequence sequence, bool useVariation = true, bool forceScaleTransposition = false) {
 
-    // Bypass-scale semantics are meaningful only on chromatic scales.
-    // On non-chromatic scales (for example User Scale in Voltage mode),
-    // keep evaluation on the selected scale instead of forcing semitone scale.
-    if (step.bypassScale() && scale.isChromatic()) {
+    // Arp pitch slots default to bypassScale from the legacy model.
+    // Keep that bypass only for the explicit Semitones scale; any other
+    // selected scale is the active pitch mask.
+    if (step.bypassScale() && useLegacySemitoneBypass(scale, forceScaleTransposition)) {
         const Scale &bypassScale = Scale::get(0);
         int note = step.note() + evalTransposition(bypassScale, octave, transpose);
         int probability = clamp(step.noteOctaveProbability() + probabilityBias, -1, ArpSequence::NoteOctaveProbability::Max);
@@ -201,8 +205,8 @@ static float evalStepNote(const ArpSequence::Step &step, int probabilityBias, co
 }
 
 #if defined(PLATFORM_SIM)
-float EngineTestHooks::evalArpStepNoteForScale(const ArpSequence::Step &step, int probabilityBias, const Scale &scale, int rootNote, int octave, int transpose, const ArpSequence &sequence, bool useVariation) {
-    return evalStepNote(step, probabilityBias, scale, rootNote, octave, transpose, sequence, useVariation);
+float EngineTestHooks::evalArpStepNoteForScale(const ArpSequence::Step &step, int probabilityBias, const Scale &scale, int rootNote, int octave, int transpose, const ArpSequence &sequence, bool useVariation, bool forceScaleTransposition) {
+    return evalStepNote(step, probabilityBias, scale, rootNote, octave, transpose, sequence, useVariation, forceScaleTransposition);
 }
 #endif
 
@@ -380,6 +384,7 @@ void ArpTrackEngine::update(float dt) {
     int rootNote = sequence.selectedRootNote(_model.project().rootNote());
     int octave = _arpTrack.octave();
     int transpose = _arpTrack.transpose();
+    bool forceScaleTransposition = _arpTrack.isRouted(Routing::Target::Transpose) && transpose != 0;
 
     // helper to send gate/cv from monitoring to midi output engine
     auto sendToMidiOutputEngine = [this] (bool gate, float cv = 0.f) {
@@ -420,7 +425,7 @@ void ArpTrackEngine::update(float dt) {
 
     if (stepMonitoring) {
         const auto &step = sequence.step(_monitorStepIndex);
-        setOverride(evalStepNote(step, 0, scale, rootNote, octave, transpose,  sequence, true));
+        setOverride(evalStepNote(step, 0, scale, rootNote, octave, transpose,  sequence, true, forceScaleTransposition));
     } else if (liveMonitoring && _recordHistory.isNoteActive() && !running) {
         int note = noteFromMidiNote(_recordHistory.activeNote()) + evalTransposition(scale, octave, transpose);
         setOverride(scale.noteToVolts(note) + (scale.isChromatic() ? rootNote : 0) * (1.f / 12.f));
@@ -513,6 +518,7 @@ void ArpTrackEngine::triggerStep(uint32_t tick, uint32_t divisor, bool forNextSt
     _noteCount = _notes.size();
     int octave = _arpTrack.octave();
     int transpose = _arpTrack.transpose();
+    bool forceScaleTransposition = _arpTrack.isRouted(Routing::Target::Transpose) && transpose != 0;
     bool fillStep = fill() && (rng.nextRange(100) < uint32_t(fillAmount()));
     bool useFillGates = fillStep && _arpTrack.fillMode() == ArpTrack::FillMode::Gates;
     bool useFillSequence = fillStep && _arpTrack.fillMode() == ArpTrack::FillMode::NextPattern;
@@ -623,7 +629,7 @@ void ArpTrackEngine::triggerStep(uint32_t tick, uint32_t divisor, bool forNextSt
     if (stepGate || _arpTrack.cvUpdateMode() == ArpTrack::CvUpdateMode::Always) {
         const auto &scale = evalSequence.selectedScale(_model.project().scale());
         int rootNote = evalSequence.selectedRootNote(_model.project().rootNote());
-        _cvQueue.push({ Groove::applySwing(stepTick, swing()), evalStepNote(step, _arpTrack.noteProbabilityBias(), scale, rootNote, _octave+octave+_notes.at(_noteIndex).octave, transpose, sequence), step.slide() });
+        _cvQueue.push({ Groove::applySwing(stepTick, swing()), evalStepNote(step, _arpTrack.noteProbabilityBias(), scale, rootNote, _octave+octave+_notes.at(_noteIndex).octave, transpose, sequence, true, forceScaleTransposition), step.slide() });
     }
 }
 

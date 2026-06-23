@@ -1,6 +1,6 @@
 <img src="https://github.com/VinxScorza/performer/actions/workflows/ci.yml/badge.svg?branch=master" alt="Build Status">
 
-# Vinx PER|FORMER firmware v0.4.3
+# Vinx PER|FORMER firmware v0.4.4
 
 ## <a href="CHANGELOG.md" target="_blank" rel="noopener noreferrer">Click for CHANGELOG</a> · <a href="https://vinxscorza.github.io/performer/features/" target="_blank" rel="noopener noreferrer">Click for FEATURES</a>
 
@@ -36,8 +36,9 @@ This is a personal fork of the <a href="https://github.com/mebitek/performer" ta
 The Vinx Scorza line begins at `v0.3.2-vinx.1`. Everything before that point in this repository history and changelog is inherited from the Mebitek fork and kept here as upstream reference. Starting from the first standalone Vinx release, this fork uses standalone Vinx semantic versioning (`v0.x.y`) and no longer carries the inherited `v0.3.2-vinx.*` prefix. Historical entries remain unchanged as lineage reference.
 
 If you are looking for a more conservative upstream baseline, you may prefer the original Westlicht or Mebitek lines. If you are interested in a more hands-on, performance-oriented evolution of PER|FORMER, you are in the right place. What I'm aiming for is a solid machine for live performance, but also a crazy one for experimenting.<br>
-I am very grateful to Simon Kallweit for creating and developing the original Westlicht PER|FORMER. If you would like to support this fork and the upstream work behind it financially, you can donate here:<br>
-<a href="https://vinxscorza.github.io/performer/donate/" target="_blank" rel="noopener noreferrer">Donate to Vinx Scorza</a> · <a href="https://mebitek.github.io/performer/donate/" target="_blank" rel="noopener noreferrer">Donate to Mebitek</a> · <a href="https://westlicht.github.io/performer/donate/" target="_blank" rel="noopener noreferrer">Donate to Simon Kallweit / Westlicht</a>.
+I am very grateful to Simon Kallweit for creating and developing the original Westlicht PER|FORMER. Free software should stay free in the sense of user freedom, but free as in freedom does not mean free labor. If this fork gives you value, consider supporting the work behind it:<br>
+<a href="https://vinxscorza.github.io/performer/donate/" target="_blank" rel="noopener noreferrer"><strong>Donate to Vinx Scorza</strong></a><br>
+<small>Upstream support: <a href="https://mebitek.github.io/performer/donate/" target="_blank" rel="noopener noreferrer">Mebitek</a> · <a href="https://westlicht.github.io/performer/donate/" target="_blank" rel="noopener noreferrer">Simon Kallweit / Westlicht</a>.</small>
 
 To clone this repository:
 

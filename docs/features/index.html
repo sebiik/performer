@@ -3,8 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Features | PER FORMER eurorack sequencer</title>
-  <meta name="description" content="Detailed Vinx Scorza fork evolution and feature history for the PER|FORMER firmware line.">
+  <title>Vinx PER|FORMER Features | Generator and Launchpad Firmware Changes</title>
+  <meta name="description" content="Curated feature overview of the Vinx Scorza PER|FORMER firmware fork, including generators, Launchpad workflows, 16-step editing, timing, routing, and simulator updates.">
+  <link rel="canonical" href="https://vinxscorza.github.io/performer/features/">
+  <meta name="theme-color" content="#252525">
+  <meta name="robots" content="index,follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vinx PER|FORMER">
+  <meta property="og:title" content="Vinx PER|FORMER Features | Generator and Launchpad Firmware Changes">
+  <meta property="og:description" content="Curated feature overview of the Vinx Scorza PER|FORMER firmware fork, including generators, Launchpad workflows, 16-step editing, timing, routing, and simulator updates.">
+  <meta property="og:url" content="https://vinxscorza.github.io/performer/features/">
+  <meta property="og:image" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta property="og:image:secure_url" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Vinx PER|FORMER firmware social preview">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Vinx PER|FORMER Features | Generator and Launchpad Firmware Changes">
+  <meta name="twitter:description" content="Curated feature overview of the Vinx Scorza PER|FORMER firmware fork, including generators, Launchpad workflows, 16-step editing, timing, routing, and simulator updates.">
+  <meta name="twitter:image" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta name="twitter:image:alt" content="Vinx PER|FORMER firmware social preview">
   <link rel="stylesheet" href="../style.css">
 </head>
 <body class="features-page">
@@ -38,7 +57,11 @@
             This page is the curated web summary of the Vinx Scorza line. It reorganizes the work by topic instead of strict release order so it is easier to understand what this branch actually adds.
           </p>
           <p>
-            This documentation line is aligned through the active <code>v0.4.3</code> development line. If you want the exact chronological log, including inherited upstream history and older <code>v0.3.2-vinx.*</code> releases, the repository <a href="https://github.com/VinxScorza/performer/blob/master/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG.md</a> remains the technical reference.
+            This documentation line is aligned through the active development line. If you want the exact chronological log, including inherited upstream history and older <code>v0.3.2-vinx.*</code> releases, the repository <a href="https://github.com/VinxScorza/performer/blob/master/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG.md</a> remains the technical reference.
+          </p>
+          <p>
+            Known limits and real-hardware validation status (including external clock scope, Voltage Mode edge-cases, and BeatStep Pro coverage) are tracked centrally in
+            <a href="../manual/index.html#manual-validation-scope">User Manual - Known Limits / Validation Scope</a>.
           </p>
         </div>
       </section>
@@ -57,7 +80,7 @@
               <li><code>Curve</code> tracks were extended with per-step <code>Gate Offset</code> and <code>Gate Length</code>, including edit-page support, overview rendering, Launchpad handling, and simulator bindings.</li>
               <li>Note tie editing became chain-aware: tied steps now keep persistent linkage and share note edits as one pitch group (encoder, MIDI note input, and shortcut note input paths), with clearer tie rendering.</li>
               <li>Scale-selection limits were fixed so the full built-in plus user-scale set is reachable again across <code>Project</code>, <code>Note</code>, <code>Logic</code>, <code>Stochastic</code>, and <code>Arp</code>.</li>
-              <li><code>Voltage Mode</code> is now coherent across <code>Note</code>, <code>Arp</code>, and <code>Stochastic</code>: octave wrapping follows the intended <code>1.2V</code> span and non-chromatic user scales are preserved on the covered paths instead of forcing semitone/<code>1V/oct</code> fallback.</li>
+              <li><code>Voltage Mode</code> is now coherent across <code>Note</code>, <code>Arp</code>, and <code>Stochastic</code>: octave wrapping follows the intended <code>1.2V</code> span, non-chromatic user scales are preserved on the covered paths, and routed transpose on <code>Arp</code>/<code>Stochastic</code> remains inside the selected scale/root instead of shifting the root chromatically.</li>
               <li>Project-scale quantization remap now preserves octave register on Note tracks (Project <code>Scale</code> path with sequence <code>Scale = Default</code>), avoiding octave-collapse when changing Project scale.</li>
             </ul>
           </article>
@@ -110,6 +133,7 @@
             <ul>
               <li><code>Random</code> now runs on a non-destructive preview/apply model with <code>A/B</code>, <code>Cancel</code>, <code>Apply</code>, and reroll actions built around predictable state transitions; <code>Variation</code> follows the same per-step keep/replace semantics used in <code>Acid</code>.</li>
               <li>Seed handling moved to stable <code>32-bit</code> hexadecimal values, and seed edits remain intentional while parameter edits avoid unwanted seed drift.</li>
+              <li>On the Note layer, <code>Range</code> now behaves as a musical span around the current register and <code>Bias</code> shifts that center lower/higher, with a center-weighted note distribution. Other layers keep the older generic random mapping.</li>
               <li>Preview rendering is richer and layer-aware (especially on Note tracks), and footer actions stay in context without unexpected page exits.</li>
             </ul>
           </article>
@@ -179,9 +203,9 @@
             </p>
             <ul>
               <li>The generator ecosystem across track families (<code>Random</code>, <code>Euclidean</code>, <code>Acid</code> <code>Layer/Phrase</code>, <code>Chaos</code> <code>Vandalize/Wreck/Entropy</code>) now follows a more coherent preview/apply safety model shared between machine pages and Launchpad <code>Generators Mode</code>.</li>
-              <li>All generators now enter on <code>ORIGINAL</code>; first preview is created only on explicit reroll.</li>
+              <li>All generators now enter on <code>ORIGINAL</code>; first preview is normally created on explicit reroll, with Euclidean direct parameter edits also able to arm preview.</li>
               <li><code>Generate</code> opens on the current <code>16-step</code> bank and keeps navigation aligned to the active context.</li>
-              <li>The <code>Euclidean</code> generator was reworked with compare behavior, explicit reroll, direct parameter editing, and a strict <code>Beats ≤ Steps</code> constraint.</li>
+              <li>The <code>Euclidean</code> generator was reworked with compare behavior, explicit reroll, direct parameter editing, automatic preview arming after <code>Offset</code>/<code>Steps</code>/<code>Beats</code> edits, and a strict <code>Beats ≤ Steps</code> constraint.</li>
               <li>Footer and context action layouts were rewritten and normalized across generator pages for faster, less error-prone operation in performance use.</li>
               <li><code>ResetGen</code> now restores neutral defaults instead of quietly rerolling generator state.</li>
               <li><code>Init Layer</code>, <code>Init Steps</code>, and <code>Init Seq</code> were separated again with a consistent selection-aware fallback.</li>
@@ -218,7 +242,7 @@
             <ul>
               <li><code>System</code> now includes direct save and a simplified settings flow, with an explicit save prompt when leaving <code>System -&gt; Settings</code> after changes (including <code>Chaos Defaults</code>) instead of silently discarding edits.</li>
               <li><code>Chaos Defaults</code> was returned to the normal machine-settings save path instead of being treated as a separate auto-written case.</li>
-              <li>Project file-task flow (<code>Load</code>/<code>Save</code>/<code>Save As</code>) was hardened by serializing requests and delivering results on UI thread, reducing race-prone overlap paths; UI now exposes busy-state feedback while operations are active. This is a strong partial hardening, not yet a full architectural closure.</li>
+              <li>Project file-task flow (<code>Load</code>/<code>Save</code>/<code>Save As</code>) was hardened by serializing requests and delivering results on UI thread, reducing race-prone overlap paths; UI now exposes busy-state feedback while operations are active. Project <code>LOAD</code> slot browsing also caches slot info and hardens STM32 SD reads to reduce reboot risk with populated project folders. This is a strong partial hardening, not yet a full architectural closure.</li>
               <li>SD boot tolerance was hardened for slower cards by extending init tolerance and feeding watchdog during long SD bring-up waits, while keeping runtime watchdog behavior strict during normal operation.</li>
               <li><code>Menu Wrap</code> was added as an on-by-default preference for cyclic list navigation.</li>
               <li>Screensaver behavior, wake behavior, and the <code>System</code> landing tab were refined for more predictable daily use.</li>
@@ -271,7 +295,7 @@
             </p>
             <ul>
               <li>External clock modes (<code>Reset Pulse</code> / <code>Reset Gate</code>) still benefit from real hardware validation.</li>
-              <li><code>Voltage Mode</code> user scales need broader testing across <code>Note</code> / <code>Arp</code> / <code>Stochastic</code>.</li>
+              <li><code>Voltage Mode</code> and scale/root-safe transpose are aligned on the covered <code>Note</code> / <code>Arp</code> / <code>Stochastic</code> paths; uncommon <code>notesPerOctave &gt; 12</code> Arp/Stochastic cases still benefit from broader testing.</li>
               <li>Desktop Simulator USB MIDI has been validated well on <code>macOS / OS X</code> with <code>Launchpad Mini MK3</code>, but not yet across other Launchpads or operating systems.</li>
             </ul>
           </article>

@@ -33,11 +33,11 @@ static constexpr int DefaultChaosSpan = 48;
 
 class BaseSetting {
 public:
-    virtual std::string getKey() = 0;
+    virtual const std::string &getKey() const = 0;
     virtual void shiftValue(int shift) = 0;
     virtual void setValue(int value) = 0;
-    virtual std::string getMenuItem() = 0;
-    virtual std::string getMenuItemKey() = 0;
+    virtual const std::string &getMenuItem() const = 0;
+    virtual const std::string &getMenuItemKey() const = 0;
     virtual void read(VersionedSerializedReader &writer) = 0;
     virtual void write(VersionedSerializedWriter &writer) = 0;
     virtual void reset() = 0;
@@ -61,21 +61,31 @@ public:
         _defaultValue(defaultValue)
     {}
 
-    std::string getKey() override {
+    const std::string &getKey() const override {
         return _key;
     }
 
-    std::string getMenuItem() override {
+    const std::string &getMenuItem() const override {
         return _menuItem;
     }
 
-    std::string getMenuItemKey() override {
-        return _menuItemKeys[getCurrentIndex()];
+    const std::string &getMenuItemKey() const override {
+        static const std::string fallback = "?";
+        if (_menuItemKeys.empty()) {
+            return fallback;
+        }
+        int index = getCurrentIndex();
+        if (index >= int(_menuItemKeys.size())) {
+            index = int(_menuItemKeys.size()) - 1;
+        }
+        return _menuItemKeys[index];
     }
 
     void setValue(int index) override {
-        unsigned int validIndex = (index >= 0) ? index : 0;
-        if (validIndex > _menuItemValues.size() - 1) validIndex = _menuItemValues.size() - 1;
+        if (_menuItemValues.empty()) {
+            return;
+        }
+        int validIndex = clamp(index, 0, int(_menuItemValues.size()) - 1);
         _value = _menuItemValues[validIndex];
     };
 
@@ -104,8 +114,11 @@ public:
     };
 
 private:
-    int getCurrentIndex() {
+    int getCurrentIndex() const {
         auto it = std::find(_menuItemValues.begin(), _menuItemValues.end(), _value);
+        if (it == _menuItemValues.end()) {
+            return 0;
+        }
         return std::distance(_menuItemValues.begin(), it);
     }
 
@@ -324,7 +337,7 @@ public:
     BaseSetting *get(int key);
     template<typename S>
     S *get(std::string key) { return dynamic_cast<S *>(_get(key)); }
-    std::vector<BaseSetting *> all();
+    const std::vector<BaseSetting *> &all() const;
 
     void clear();
     void write(VersionedSerializedWriter &writer) const;

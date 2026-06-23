@@ -10,6 +10,10 @@
 #include "os/os.h"
 #include "os/LockGuard.h"
 
+#ifdef PLATFORM_STM32
+#include "drivers/System.h"
+#endif
+
 #include <algorithm>
 
 #include <cstring>
@@ -17,7 +21,7 @@
 uint32_t FileManager::_volumeState = 0;
 uint32_t FileManager::_nextVolumeStateCheckTicks = 0;
 
-std::array<FileManager::CachedSlotInfo, 4> FileManager::_cachedSlotInfos;
+std::array<FileManager::CachedSlotInfo, FileManager::SlotCacheSize> FileManager::_cachedSlotInfos;
 uint32_t FileManager::_cachedSlotInfoTicket = 0;
 
 FileManager::TaskExecuteCallback FileManager::_taskExecuteCallback;
@@ -58,6 +62,7 @@ void FileManager::init() {
     _taskPending = 0;
     _taskExecuting = 0;
     _taskResultPending = 0;
+    invalidateAllSlots();
 }
 
 bool FileManager::volumeAvailable() {
@@ -482,11 +487,18 @@ void FileManager::slotInfo(FileType type, int slot, SlotInfo &info) {
     }
 
     info.used = false;
+    info.name[0] = '\0';
 
     FixedStringBuilder<32> path;
     slotPath(path, type, slot);
 
+#ifdef PLATFORM_STM32
+    System::resetWatchdog();
+#endif
     if (fs::exists(path)) {
+#ifdef PLATFORM_STM32
+        System::resetWatchdog();
+#endif
         fs::File file(path, fs::File::Read);
         FileHeader header;
         size_t lenRead;

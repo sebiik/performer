@@ -49,6 +49,7 @@ public:
 
     ControllerManager::UiPageKind uiPageKind() const { return _controllerManager.uiPageKind(); }
     bool isGeneratorPageTop() const { return _pageManager.top() == &_pages.generator; }
+    bool isSystemPageTop() const { return _pageManager.top() == &_pages.system; }
     bool isNoteSequenceEditPageTop() const { return _pageManager.top() == &_pages.noteSequenceEdit; }
     bool isModalPageTop() const { return _pageManager.top()->isModal(); }
 

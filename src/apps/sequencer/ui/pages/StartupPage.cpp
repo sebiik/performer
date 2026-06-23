@@ -6,6 +6,9 @@
 
 #include "model/FileManager.h"
 
+#include "core/fs/FileSystem.h"
+#include "core/utils/StringBuilder.h"
+
 #include "os/os.h"
 
 StartupPage::StartupPage(PageManager &manager, PageContext &context) :
@@ -19,7 +22,18 @@ void StartupPage::draw(Canvas &canvas) {
         _state = State::Loading;
         _engine.suspend();
         FileManager::task([this] () {
+#if defined(__EMSCRIPTEN__)
+            // Web simulator policy: keep only the built-in demo project.
+            for (int slot = 0; slot < 128; ++slot) {
+                FixedStringBuilder<32> path;
+                path("PROJECTS/%03d.PRO", slot + 1);
+                fs::remove(path);
+            }
+            fs::remove("LAST.DAT");
+            return FileManager::writeProject(_model.project(), 0);
+#else
             return FileManager::readLastProject(_model.project());
+#endif
         }, [this] (fs::Error result) {
             _engine.resume();
             _state = State::Ready;

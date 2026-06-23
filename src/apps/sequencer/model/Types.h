@@ -385,7 +385,7 @@ public:
 
     static void printNote(StringBuilder &str, int note) {
         static const char *names[] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-        str(names[note]);
+        str(names[modulo(note, 12)]);
     }
 
 

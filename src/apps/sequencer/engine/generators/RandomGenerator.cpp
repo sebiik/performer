@@ -111,18 +111,7 @@ void RandomGenerator::update() {
         }
     }
 
-    int bias = (_params.bias * 255) / 10;
-    int scale = _params.scale;
     int variation = _params.variation;
-
-    for (int i = 0; i < size; ++i) {
-        if (_selected[i]) {
-            int value = _pattern[i];
-            // value = ((value - 127) * scale) / 10 + 127 + bias;
-            value = ((value + bias - 127) * scale) / 10 + 127;
-            _pattern[i] = clamp(value, 0, 255);
-        } 
-    }
 
     for (size_t i = 0; i < _pattern.size(); ++i) {
         if (!_selected[i]) {
@@ -135,7 +124,8 @@ void RandomGenerator::update() {
             continue;
         }
 
-        const float generated = _pattern[i] * (1.f / 255.f);
+        const float generated = _builder.randomGeneratorValue(int(i), _pattern[i], _params.bias, _params.scale, _selected);
+        _pattern[i] = clamp(int(std::round(generated * 255.f)), 0, 255);
         _builder.setValue(i, generated);
     }
 }

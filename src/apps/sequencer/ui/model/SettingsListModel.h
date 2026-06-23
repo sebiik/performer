@@ -65,7 +65,7 @@ public:
 
 private:
     bool hideSetting(BaseSetting *setting) const {
-        const auto key = setting->getKey();
+        const auto &key = setting->getKey();
         if (key == SettingChaosSeqLayers || key == SettingChaosPatLayers || key == SettingEntropyLayers ||
             key == SettingChaosPivotNote || key == SettingChaosSpan) {
             return true;

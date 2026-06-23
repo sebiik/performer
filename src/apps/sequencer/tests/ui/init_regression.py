@@ -61,6 +61,27 @@ class InitRegressionTest(tf.UiTest):
         p.setTrackMode(0, p.tracks[0].TrackMode.Arp)
         return p
 
+    def test_system_page_confirmation_yes_enters_without_crash(self):
+        c = self.controller
+
+        c.selectPage("system")
+        self.assertTrue(self.env.sequencer.isModalPageTop)
+
+        c.press("f5").wait(30)
+        self.assertTrue(self.env.sequencer.isSystemPageTop)
+        self.assertFalse(self.env.sequencer.isModalPageTop)
+
+    def test_note_layer_entry_does_not_crash(self):
+        p = self._configure_note_track()
+        c = self.controller
+
+        c.selectPage("steps")
+        p.selectedNoteSequenceLayer = p.selectedNoteSequence.Layer.Gate
+
+        c.press("f4").wait(30)
+        self.assertTrue(self.env.sequencer.isNoteSequenceEditPageTop)
+        self.assertEqual(p.selectedNoteSequenceLayer, p.selectedNoteSequence.Layer.Note)
+
     def test_note_init_layer_and_init_steps_selection_and_fallback(self):
         p = self._configure_note_track()
         c = self.controller

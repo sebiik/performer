@@ -10,6 +10,7 @@ class ChaosGenerator;
 class ChaosEntropyGenerator;
 class EuclideanGenerator;
 class RandomGenerator;
+class StringBuilder;
 
 class GeneratorPage : public BasePage {
 public:
@@ -49,6 +50,8 @@ public:
     bool launchpadShowingPreview() const;
     bool launchpadResetState() const;
     bool launchpadTrackRetargetLocked() const;
+    void printChaosSettingEdit(int settingIndex, StringBuilder &str) const;
+    void editChaosSettingEdit(int settingIndex, int value, bool shift);
 
 private:
     bool boundTrackContextValid() const;

@@ -12,7 +12,9 @@
 #include "core/utils/Random.h"
 
 #include <algorithm>
+#include <array>
 #include <bitset>
+#include <cmath>
 #include <vector>
 
 class SequenceBuilder {
@@ -37,6 +39,18 @@ public:
 
     virtual float value(int index) const = 0;
     virtual void setValue(int index, float value) = 0;
+
+    static float genericRandomGeneratorValue(uint8_t randomValue, int bias, int scale) {
+        const int biasValue = (bias * 255) / 10;
+        const int value = ((int(randomValue) + biasValue - 127) * scale) / 10 + 127;
+        return clamp(value, 0, 255) * (1.f / 255.f);
+    }
+
+    virtual float randomGeneratorValue(int index, uint8_t randomValue, int bias, int scale, const std::bitset<CONFIG_STEP_COUNT> &selected) const {
+        (void)index;
+        (void)selected;
+        return genericRandomGeneratorValue(randomValue, bias, scale);
+    }
 
     virtual void clearSteps(const std::bitset<CONFIG_STEP_COUNT> &selected) = 0;
     virtual void copyStep(int fromIndex, int toIndex) = 0;
@@ -269,6 +283,81 @@ inline void applyTarget<ArpSequence>(EntropyTarget target, const ArpSequence::St
 }
 }
 
+namespace random_detail {
+template<typename Sequence, typename Layer>
+inline float mapRandomGeneratorValue(const Sequence &, Layer, int, uint8_t randomValue, int bias, int scale, const std::bitset<CONFIG_STEP_COUNT> &) {
+    return SequenceBuilder::genericRandomGeneratorValue(randomValue, bias, scale);
+}
+
+inline float mapRandomGeneratorValue(const NoteSequence &original, NoteSequence::Layer layer, int, uint8_t randomValue, int bias, int scale, const std::bitset<CONFIG_STEP_COUNT> &selected) {
+    if (layer != NoteSequence::Layer::Note) {
+        return SequenceBuilder::genericRandomGeneratorValue(randomValue, bias, scale);
+    }
+
+    const Types::LayerRange range = NoteSequence::layerRange(NoteSequence::Layer::Note);
+    if (range.max <= range.min) {
+        return 0.f;
+    }
+
+    const int first = original.firstStep();
+    const int last = original.lastStep();
+    const bool hasSelection = selected.any();
+
+    std::array<int, CONFIG_STEP_COUNT> notes = {};
+    int noteCount = 0;
+
+    auto collectNotes = [&](bool gatedOnly) {
+        noteCount = 0;
+        for (int stepIndex = first; stepIndex <= last; ++stepIndex) {
+            const int relativeStep = stepIndex - first;
+            if (hasSelection && !selected[relativeStep]) {
+                continue;
+            }
+
+            const auto &step = original.step(stepIndex);
+            if (gatedOnly && !step.gate()) {
+                continue;
+            }
+
+            if (noteCount < int(notes.size())) {
+                notes[noteCount++] = step.note();
+            }
+        }
+    };
+
+    collectNotes(true);
+    if (noteCount == 0) {
+        collectNotes(false);
+    }
+    if (noteCount == 0) {
+        notes[0] = 0;
+        noteCount = 1;
+    }
+
+    std::sort(notes.begin(), notes.begin() + noteCount);
+    const int middle = noteCount / 2;
+    int pivot = notes[middle];
+    if ((noteCount & 1) == 0) {
+        pivot = int(std::round((notes[middle - 1] + notes[middle]) * 0.5f));
+    }
+    pivot = clamp(pivot + bias * 3, range.min, range.max);
+
+    const int maxHalfSpan = std::max(0, (range.max - range.min) / 2);
+    const float rangeAmount = clamp(scale, 0, 100) * 0.01f;
+    int halfSpan = 0;
+    if (scale > 0 && maxHalfSpan > 0) {
+        const float rangeCurve = rangeAmount * rangeAmount * (1.6f - 0.6f * rangeAmount);
+        halfSpan = std::max(1, int(std::round(maxHalfSpan * rangeCurve)));
+    }
+
+    const float centered = clamp((int(randomValue) - 127) / 127.f, -1.f, 1.f);
+    const float shaped = centered * (0.55f + 0.45f * std::abs(centered));
+    const int note = clamp(pivot + int(std::round(shaped * halfSpan)), range.min, range.max);
+
+    return float(note - range.min) / float(range.max - range.min);
+}
+}
+
 template<typename T>
 class SequenceBuilderImpl : public SequenceBuilder {
 public:
@@ -333,6 +422,10 @@ public:
     void setValue(int index, float value) override {
         int layerValue = std::round(value * (_range.max - _range.min) + _range.min);
         _preview.step(_preview.firstStep() + index).setLayerValue(_layer, layerValue);
+    }
+
+    float randomGeneratorValue(int index, uint8_t randomValue, int bias, int scale, const std::bitset<CONFIG_STEP_COUNT> &selected) const override {
+        return random_detail::mapRandomGeneratorValue(_original, _layer, index, randomValue, bias, scale, selected);
     }
 
     void clearSteps(const std::bitset<CONFIG_STEP_COUNT> &selected) override {
@@ -651,20 +744,15 @@ public:
             if (_selected.any()) {
                 for (int stepIndex = 0; stepIndex < CONFIG_STEP_COUNT; ++stepIndex) {
                     if (_selected[stepIndex]) {
-                        backup.targetSteps.push_back(uint8_t(stepIndex));
+                        backup.addTargetStep(stepIndex, sequence.step(stepIndex));
                     }
                 }
             } else {
                 for (int stepIndex = sequence.firstStep(); stepIndex <= sequence.lastStep(); ++stepIndex) {
-                    backup.targetSteps.push_back(uint8_t(stepIndex));
+                    backup.addTargetStep(stepIndex, sequence.step(stepIndex));
                 }
             }
 
-            backup.originalSteps.reserve(backup.targetSteps.size());
-            for (uint8_t stepIndex : backup.targetSteps) {
-                backup.originalSteps.push_back(sequence.step(stepIndex));
-            }
-            backup.entrySteps = backup.originalSteps;
             if (trackIndex == _selectedTrackIndex) {
                 _selectedTrackSlot = slot;
             }
@@ -686,8 +774,7 @@ public:
 
     void revert() override {
         for (int i = 0; i < _trackCount; ++i) {
-            restoreEntrySteps(i);
-            _tracks[i].originalSteps = _tracks[i].entrySteps;
+            restoreOriginalSteps(i);
         }
         _showingPreview = false;
     }
@@ -756,10 +843,10 @@ public:
             }
 
             auto &backup = _tracks[trackSlot];
-            for (size_t i = 0; i < backup.targetSteps.size(); ++i) {
-                if (!selected.any() || selected[backup.targetSteps[i]]) {
+            for (uint8_t stepIndex : backup.targetSteps) {
+                if (!selected.any() || selected[stepIndex]) {
                     auto &sequence = _project.noteSequence(_trackIndices[trackSlot], _patternIndex);
-                    sequence.step(backup.targetSteps[i]).clear();
+                    sequence.step(stepIndex).clear();
                 }
             }
         }
@@ -792,6 +879,9 @@ public:
         if (_selectedTrackSlot < 0) {
             return false;
         }
+        if (stepIndex < 0 || stepIndex >= CONFIG_STEP_COUNT) {
+            return false;
+        }
         const auto &targetSteps = _tracks[_selectedTrackSlot].targetSteps;
         return std::find(targetSteps.begin(), targetSteps.end(), uint8_t(stepIndex)) != targetSteps.end();
     }
@@ -803,7 +893,9 @@ public:
     }
 
     int targetStepCount(int trackSlot) const { return int(_tracks[trackSlot].targetSteps.size()); }
-    const NoteSequence::Step &originalStep(int trackSlot, int targetIndex) const { return _tracks[trackSlot].originalSteps[targetIndex]; }
+    const NoteSequence::Step &originalStep(int trackSlot, int targetIndex) const {
+        return _tracks[trackSlot].originalSteps[targetIndex];
+    }
     NoteSequence::Step &liveStep(int trackSlot, int targetIndex) {
         auto &sequence = _project.noteSequence(_trackIndices[trackSlot], _patternIndex);
         return sequence.step(_tracks[trackSlot].targetSteps[targetIndex]);
@@ -811,9 +903,21 @@ public:
 
 private:
     struct TrackBackup {
+        void addTargetStep(int stepIndex, const NoteSequence::Step &step) {
+            if (stepIndex < 0 || stepIndex >= CONFIG_STEP_COUNT) {
+                return;
+            }
+
+            if (std::find(targetSteps.begin(), targetSteps.end(), uint8_t(stepIndex)) != targetSteps.end()) {
+                return;
+            }
+
+            targetSteps.push_back(uint8_t(stepIndex));
+            originalSteps.push_back(step);
+        }
+
         std::vector<uint8_t> targetSteps;
         std::vector<NoteSequence::Step> originalSteps;
-        std::vector<NoteSequence::Step> entrySteps;
     };
 
     void restoreOriginalSteps(int trackSlot) {
@@ -829,14 +933,6 @@ private:
         auto &backup = _tracks[trackSlot];
         for (size_t i = 0; i < backup.targetSteps.size(); ++i) {
             backup.originalSteps[i] = sequence.step(backup.targetSteps[i]);
-        }
-    }
-
-    void restoreEntrySteps(int trackSlot) {
-        auto &sequence = _project.noteSequence(_trackIndices[trackSlot], _patternIndex);
-        const auto &backup = _tracks[trackSlot];
-        for (size_t i = 0; i < backup.targetSteps.size(); ++i) {
-            sequence.step(backup.targetSteps[i]) = backup.entrySteps[i];
         }
     }
 

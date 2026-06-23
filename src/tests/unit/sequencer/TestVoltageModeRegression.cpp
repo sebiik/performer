@@ -87,15 +87,18 @@ UNIT_TEST("VoltageModeRegression") {
         expectTrue(!almostEqual(actual, expectedSemitone));
     }
 
-    CASE("Arp bypass keeps semitone path on chromatic scales") {
+    CASE("Arp selected minor pentatonic scale masks legacy semitone bypass") {
         Project project;
         project.clear();
         project.setSelectedTrackIndex(0);
         project.setSelectedPatternIndex(0);
         project.setTrackMode(0, Track::TrackMode::Arp);
 
+        const int minorPentatonicIndex = findScaleIndexByName("Minor Pent.");
+        expectTrue(minorPentatonicIndex >= 0);
+
         auto &sequence = project.selectedArpSequence();
-        sequence.setScale(1); // Major scale (chromatic)
+        sequence.setScale(minorPentatonicIndex);
         sequence.setRootNote(0);
 
         auto &step = sequence.step(0);
@@ -107,11 +110,66 @@ UNIT_TEST("VoltageModeRegression") {
 
         const auto &scale = sequence.selectedScale(project.scale());
         float actual = EngineTestHooks::evalArpStepNoteForScale(step, 0, scale, 0, 0, 0, sequence, false);
-        float expectedBypass = Scale::get(0).noteToVolts(step.note());
         float expectedSelectedScale = scale.noteToVolts(step.note());
+        float expectedBypass = Scale::get(0).noteToVolts(step.note());
 
-        expectTrue(almostEqual(actual, expectedBypass));
-        expectTrue(!almostEqual(actual, expectedSelectedScale));
+        expectTrue(almostEqual(actual, expectedSelectedScale));
+        expectTrue(!almostEqual(actual, expectedBypass));
+    }
+
+    CASE("Arp semitones scale keeps explicit chromatic behavior") {
+        Project project;
+        project.clear();
+        project.setSelectedTrackIndex(0);
+        project.setSelectedPatternIndex(0);
+        project.setTrackMode(0, Track::TrackMode::Arp);
+
+        auto &sequence = project.selectedArpSequence();
+        sequence.setScale(0); // Semitones
+        sequence.setRootNote(0);
+
+        auto &step = sequence.step(0);
+        step.clear();
+        step.setNote(1);
+        step.setBypassScale(true);
+        step.setNoteOctaveProbability(0);
+        step.setNoteVariationProbability(0);
+
+        const auto &scale = sequence.selectedScale(project.scale());
+        float actual = EngineTestHooks::evalArpStepNoteForScale(step, 0, scale, 0, 0, 0, sequence, false);
+        float expectedSemitone = Scale::get(0).noteToVolts(step.note());
+
+        expectTrue(almostEqual(actual, expectedSemitone));
+    }
+
+    CASE("Arp routed transpose stays inside selected minor pentatonic scale") {
+        Project project;
+        project.clear();
+        project.setSelectedTrackIndex(0);
+        project.setSelectedPatternIndex(0);
+        project.setTrackMode(0, Track::TrackMode::Arp);
+
+        const int minorPentatonicIndex = findScaleIndexByName("Minor Pent.");
+        expectTrue(minorPentatonicIndex >= 0);
+
+        auto &sequence = project.selectedArpSequence();
+        sequence.setScale(minorPentatonicIndex);
+        sequence.setRootNote(0);
+
+        auto &step = sequence.step(0);
+        step.clear();
+        step.setNote(0);
+        step.setBypassScale(true);
+        step.setNoteOctaveProbability(0);
+        step.setNoteVariationProbability(0);
+
+        const auto &scale = sequence.selectedScale(project.scale());
+        float actual = EngineTestHooks::evalArpStepNoteForScale(step, 0, scale, 0, 0, 1, sequence, false, true);
+        float expectedScale = scale.noteToVolts(1);
+        float expectedChromaticRootShift = Scale::get(0).noteToVolts(1);
+
+        expectTrue(almostEqual(actual, expectedScale));
+        expectTrue(!almostEqual(actual, expectedChromaticRootShift));
     }
 
     CASE("Stochastic bypass does not force semitone scale on non-chromatic user voltage scale") {
@@ -146,15 +204,18 @@ UNIT_TEST("VoltageModeRegression") {
         expectTrue(!almostEqual(actual, expectedSemitone));
     }
 
-    CASE("Stochastic bypass keeps semitone path on chromatic scales") {
+    CASE("Stochastic selected minor pentatonic scale masks legacy semitone bypass") {
         Project project;
         project.clear();
         project.setSelectedTrackIndex(0);
         project.setSelectedPatternIndex(0);
         project.setTrackMode(0, Track::TrackMode::Stochastic);
 
+        const int minorPentatonicIndex = findScaleIndexByName("Minor Pent.");
+        expectTrue(minorPentatonicIndex >= 0);
+
         auto &sequence = project.selectedStochasticSequence();
-        sequence.setScale(1); // Major scale (chromatic)
+        sequence.setScale(minorPentatonicIndex);
         sequence.setRootNote(0);
 
         auto &step = sequence.step(0);
@@ -166,11 +227,66 @@ UNIT_TEST("VoltageModeRegression") {
 
         const auto &scale = sequence.selectedScale(project.scale());
         float actual = EngineTestHooks::evalStochasticStepNoteForScale(step, 0, scale, 0, 0, 0, sequence, false);
-        float expectedBypass = Scale::get(0).noteToVolts(step.note());
         float expectedSelectedScale = scale.noteToVolts(step.note());
+        float expectedBypass = Scale::get(0).noteToVolts(step.note());
 
-        expectTrue(almostEqual(actual, expectedBypass));
-        expectTrue(!almostEqual(actual, expectedSelectedScale));
+        expectTrue(almostEqual(actual, expectedSelectedScale));
+        expectTrue(!almostEqual(actual, expectedBypass));
+    }
+
+    CASE("Stochastic semitones scale keeps explicit chromatic behavior") {
+        Project project;
+        project.clear();
+        project.setSelectedTrackIndex(0);
+        project.setSelectedPatternIndex(0);
+        project.setTrackMode(0, Track::TrackMode::Stochastic);
+
+        auto &sequence = project.selectedStochasticSequence();
+        sequence.setScale(0); // Semitones
+        sequence.setRootNote(0);
+
+        auto &step = sequence.step(0);
+        step.clear();
+        step.setNote(1);
+        step.setBypassScale(true);
+        step.setNoteOctaveProbability(0);
+        step.setNoteVariationProbability(0);
+
+        const auto &scale = sequence.selectedScale(project.scale());
+        float actual = EngineTestHooks::evalStochasticStepNoteForScale(step, 0, scale, 0, 0, 0, sequence, false);
+        float expectedSemitone = Scale::get(0).noteToVolts(step.note());
+
+        expectTrue(almostEqual(actual, expectedSemitone));
+    }
+
+    CASE("Stochastic routed transpose stays inside selected minor pentatonic scale") {
+        Project project;
+        project.clear();
+        project.setSelectedTrackIndex(0);
+        project.setSelectedPatternIndex(0);
+        project.setTrackMode(0, Track::TrackMode::Stochastic);
+
+        const int minorPentatonicIndex = findScaleIndexByName("Minor Pent.");
+        expectTrue(minorPentatonicIndex >= 0);
+
+        auto &sequence = project.selectedStochasticSequence();
+        sequence.setScale(minorPentatonicIndex);
+        sequence.setRootNote(0);
+
+        auto &step = sequence.step(0);
+        step.clear();
+        step.setNote(0);
+        step.setBypassScale(true);
+        step.setNoteOctaveProbability(0);
+        step.setNoteVariationProbability(0);
+
+        const auto &scale = sequence.selectedScale(project.scale());
+        float actual = EngineTestHooks::evalStochasticStepNoteForScale(step, 0, scale, 0, 0, 1, sequence, false, true);
+        float expectedScale = scale.noteToVolts(1);
+        float expectedChromaticRootShift = Scale::get(0).noteToVolts(1);
+
+        expectTrue(almostEqual(actual, expectedScale));
+        expectTrue(!almostEqual(actual, expectedChromaticRootShift));
     }
 
     CASE("Arp octave transposition on built-in Voltage advances by 1.2V") {

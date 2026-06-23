@@ -17,6 +17,7 @@ void register_sequencer(py::module &m) {
         .def_property_readonly("model", [] (SequencerApp &app) { return &app.model; })
         .def_property_readonly("uiPageKind", [] (SequencerApp &app) { return int(app.ui.uiPageKind()); })
         .def_property_readonly("isGeneratorPageTop", [] (SequencerApp &app) { return app.ui.isGeneratorPageTop(); })
+        .def_property_readonly("isSystemPageTop", [] (SequencerApp &app) { return app.ui.isSystemPageTop(); })
         .def_property_readonly("isNoteSequenceEditPageTop", [] (SequencerApp &app) { return app.ui.isNoteSequenceEditPageTop(); })
         .def_property_readonly("isModalPageTop", [] (SequencerApp &app) { return app.ui.isModalPageTop(); })
         .def_property_readonly("launchpadControllerConnectedForTest", [] (SequencerApp &app) {

@@ -30,6 +30,10 @@ static int activePitchSlotCount(const Scale &scale) {
     return clamp(scale.notesPerOctave(), 1, 12);
 }
 
+static bool useLegacySemitoneBypass(const Scale &scale, bool forceScaleTransposition) {
+    return !forceScaleTransposition && &scale == &Scale::get(0);
+}
+
 bool sortTaskByProbRev(const StochasticStep& lhs, const StochasticStep& rhs) {
     return lhs.probability() > rhs.probability();
 }
@@ -137,11 +141,11 @@ static int evalTransposition(const Scale &scale, int octave, int transpose) {
 }
 
 // evaluate note voltage
-static float evalStepNote(const StochasticSequence::Step &step, int probabilityBias, const Scale &scale, int rootNote, int octave, int transpose, StochasticSequence sequence, bool useVariation = true) {
-    // Bypass-scale semantics are meaningful only on chromatic scales.
-    // On non-chromatic scales (for example User Scale in Voltage mode),
-    // keep evaluation on the selected scale instead of forcing semitone scale.
-    if (step.bypassScale() && scale.isChromatic()) {
+static float evalStepNote(const StochasticSequence::Step &step, int probabilityBias, const Scale &scale, int rootNote, int octave, int transpose, StochasticSequence sequence, bool useVariation = true, bool forceScaleTransposition = false) {
+    // Stochastic pitch slots default to bypassScale from the legacy model.
+    // Keep that bypass only for the explicit Semitones scale; any other
+    // selected scale is the active pitch mask.
+    if (step.bypassScale() && useLegacySemitoneBypass(scale, forceScaleTransposition)) {
         const Scale &bypassScale = Scale::get(0);
         int note = step.note() + evalTransposition(bypassScale, octave, transpose);
         int probability = clamp(step.noteOctaveProbability() + probabilityBias, -1, StochasticSequence::NoteOctaveProbability::Max);
@@ -164,8 +168,8 @@ static float evalStepNote(const StochasticSequence::Step &step, int probabilityB
 }
 
 #if defined(PLATFORM_SIM)
-float EngineTestHooks::evalStochasticStepNoteForScale(const StochasticSequence::Step &step, int probabilityBias, const Scale &scale, int rootNote, int octave, int transpose, const StochasticSequence &sequence, bool useVariation) {
-    return evalStepNote(step, probabilityBias, scale, rootNote, octave, transpose, sequence, useVariation);
+float EngineTestHooks::evalStochasticStepNoteForScale(const StochasticSequence::Step &step, int probabilityBias, const Scale &scale, int rootNote, int octave, int transpose, const StochasticSequence &sequence, bool useVariation, bool forceScaleTransposition) {
+    return evalStepNote(step, probabilityBias, scale, rootNote, octave, transpose, sequence, useVariation, forceScaleTransposition);
 }
 #endif
 
@@ -298,6 +302,7 @@ void StochasticEngine::update(float dt) {
     int rootNote = sequence.selectedRootNote(_model.project().rootNote());
     int octave = _stochasticTrack.octave();
     int transpose = _stochasticTrack.transpose();
+    bool forceScaleTransposition = _stochasticTrack.isRouted(Routing::Target::Transpose) && transpose != 0;
 
     // helper to send gate/cv from monitoring to midi output engine
     auto sendToMidiOutputEngine = [this] (bool gate, float cv = 0.f) {
@@ -338,7 +343,7 @@ void StochasticEngine::update(float dt) {
 
     if (stepMonitoring) {
         const auto &step = sequence.step(_monitorStepIndex);
-        setOverride(evalStepNote(step, 0, scale, rootNote, octave, transpose, sequence, false));
+        setOverride(evalStepNote(step, 0, scale, rootNote, octave, transpose, sequence, false, forceScaleTransposition));
     } else if (liveMonitoring && _recordHistory.isNoteActive()) {
         int note = noteFromMidiNote(_recordHistory.activeNote()) + evalTransposition(scale, octave, transpose);
         setOverride(scale.noteToVolts(note) + (scale.isChromatic() ? rootNote : 0) * (1.f / 12.f));
@@ -381,6 +386,7 @@ bool canLoop = false;
 void StochasticEngine::triggerStep(uint32_t tick, uint32_t divisor, bool forNextStep) {
     int octave = _stochasticTrack.octave();
     int transpose = _stochasticTrack.transpose();
+    bool forceScaleTransposition = _stochasticTrack.isRouted(Routing::Target::Transpose) && transpose != 0;
 
     bool fillStep = fill() && (rng.nextRange(100) < uint32_t(fillAmount()));
     bool useFillGates = fillStep && _stochasticTrack.fillMode() == StochasticTrack::FillMode::Gates;
@@ -476,7 +482,7 @@ void StochasticEngine::triggerStep(uint32_t tick, uint32_t divisor, bool forNext
         }
         const auto &scale = sequence.selectedScale(_model.project().scale());
         int rootNote = sequence.selectedRootNote(_model.project().rootNote());
-        noteValue = evalStepNote(step, _stochasticTrack.noteProbabilityBias(), scale, rootNote, octave, transpose, sequence);
+        noteValue = evalStepNote(step, _stochasticTrack.noteProbabilityBias(), scale, rootNote, octave, transpose, sequence, true, forceScaleTransposition);
         stepLength = (divisor * evalStepLength(step, _stochasticTrack.lengthBias())) / StochasticSequence::Length::Range;
 
         int rnd = 0;

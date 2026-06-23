@@ -4,6 +4,13 @@
 
 <sub>Starting from `v0.3.2-vinx.1` (16 March 2026), this changelog includes changes specific to the Vinx Scorza fork. All entries below `v0.3.2-vinx.1` are inherited from the Mebitek fork history and are kept here as upstream reference. From the first standalone Vinx release onward, Vinx uses standalone semantic versioning (`v0.x.y`) while preserving the earlier `v0.3.2-vinx.*` entries as historical lineage. I try to preserve backward compatibility with older projects, settings, and workflows where possible, but I do not guarantee it for Vinx-specific changes.</sub>
 
+# v0.4.4
+- Align `Stochastic` and `Arp` pitch evaluation with selected scale/root when transpose is routed. Legacy bypass-scale slots are masked by musical scales, transpose behaves as register movement inside the selected scale/root, and explicit `Semitones` keeps chromatic legacy behavior.
+- Make `Euclidean` parameter edits immediately committable: editing `Offset`, `Steps`, or `Beats` now arms and displays a valid preview, so `Apply` can write the sequence without a separate `NEW EUCL` reroll.
+- Make `Random` more musical on the Note layer without adding parameters: `Range` behaves as a note-window span around the current register, `Bias` shifts that center lower/higher, and generated values use a more center-weighted curve; non-note layers keep the historical generic mapping.
+- Harden `Chaos` / `Wreck Pattern` memory behavior by keeping generator backup storage out of persistent UI/CCMRAM pressure; this preserves `A/B`, `Cancel`, and `Apply` while avoiding reboot-prone growth when entering Note/System pages.
+- Harden project `LOAD` browsing on SD: `FileManager` now caches slot info, initializes empty slot names safely, and feeds the watchdog around STM32 slot reads, reducing reboot risk when entering or scrolling `LOAD` with many project files.
+
 # v0.4.3
 - Rework `Chaos` / `Entropy` interaction safety: editing `target` / `selection` / `amount` no longer auto-regenerates preview; reroll stays explicit on `CHAOS` (`F3`) and `APPLY` is blocked in `ORIGINAL` state (`PRESS CHAOS`)
 - Add persistent `Chaos` register controls in context: `Pivot` / `Span` are now available during `Chaos` editing and retained across sessions

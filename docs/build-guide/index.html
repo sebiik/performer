@@ -3,8 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Build Guide | PER FORMER eurorack sequencer</title>
-  <meta name="description" content="Build guide for the Vinx Scorza PER|FORMER fork.">
+  <title>Build Guide | Vinx PER|FORMER Firmware</title>
+  <meta name="description" content="Build, flash, and simulator setup notes for the Vinx Scorza PER|FORMER firmware fork.">
+  <link rel="canonical" href="https://vinxscorza.github.io/performer/build-guide/">
+  <meta name="theme-color" content="#252525">
+  <meta name="robots" content="index,follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vinx PER|FORMER">
+  <meta property="og:title" content="Build Guide | Vinx PER|FORMER Firmware">
+  <meta property="og:description" content="Build, flash, and simulator setup notes for the Vinx Scorza PER|FORMER firmware fork.">
+  <meta property="og:url" content="https://vinxscorza.github.io/performer/build-guide/">
+  <meta property="og:image" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta property="og:image:secure_url" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Vinx PER|FORMER firmware social preview">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Build Guide | Vinx PER|FORMER Firmware">
+  <meta name="twitter:description" content="Build, flash, and simulator setup notes for the Vinx Scorza PER|FORMER firmware fork.">
+  <meta name="twitter:image" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
+  <meta name="twitter:image:alt" content="Vinx PER|FORMER firmware social preview">
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
@@ -44,6 +63,10 @@
         </p>
         <p>
           If you just want the browser-based build, use the published <a href="../testdrive/index.html">Web Simulator</a> instead of the local desktop flow described below.
+        </p>
+        <p>
+          For up-to-date known limits and validation status (hardware test scope, BeatStep Pro status, Voltage Mode edge-cases, controller limits), see
+          <a href="../manual/index.html#manual-validation-scope">User Manual - Known Limits / Validation Scope</a>.
         </p>
       </section>
 
@@ -149,12 +172,9 @@ make -j
   --usb-midi-in "Launchpad Mini MK3 LPMiniMK3 DAW Out" \
   --usb-midi-out "Launchpad Mini MK3 LPMiniMK3 DAW In"</code></pre>
         <p>
-          In the current Vinx setup, the simulator-side USB MIDI workflow has only been validated with a
-          <code>Launchpad Mini MK3</code> on macOS / OS X, since that is the only Launchpad currently available for local testing.
-        </p>
-        <p>
-          Current validation scope: Desktop Simulator USB MIDI is validated well on <code>macOS / OS X</code> with
-          <code>Launchpad Mini MK3</code>, but not yet across other Launchpads or operating systems.
+          Validation note: the simulator-side USB MIDI workflow is currently maintainer-validated on
+          <code>macOS / OS X</code> with <code>Launchpad Mini MK3</code>. For the current cross-device scope, use
+          <a href="../manual/index.html#manual-validation-scope">User Manual - Known Limits / Validation Scope</a>.
         </p>
         <p>
           The simulator also infers the Launchpad model from the selected USB port names, so a Mini MK3 is no longer
@@ -184,9 +204,9 @@ make -j
           For Launch Control XL, use <code>Factory Preset #1</code>.
         </p>
         <p>
-          This controller path is currently experimental and still needs broader field testing.
-          Real hardware validation by the maintainer has so far been done only with <code>Launch Control XL</code>.
-          Treat the <code>BeatStep Pro</code> template/profile as supported-in-code but still pending dedicated maintainer-side on-hardware validation.
+          This controller path is experimental. Validation status for <code>Launch Control XL</code> and
+          <code>BeatStep Pro</code> is tracked in
+          <a href="../manual/index.html#manual-validation-scope">User Manual - Known Limits / Validation Scope</a>.
         </p>
         <p>
           This mapping is designed for MIDI channel <code>9</code> and maps:

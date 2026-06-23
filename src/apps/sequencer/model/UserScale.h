@@ -54,7 +54,7 @@ public:
 
     // mode
 
-    Mode mode() const { return _mode; }
+    Mode mode() const { return validMode(); }
     void setMode(Mode mode) {
         mode = ModelUtils::clampedEnum(mode);
         if (mode != _mode) {
@@ -73,9 +73,9 @@ public:
 
     // size
 
-    int size() const { return _size; }
+    int size() const { return validSize(); }
     void setSize(int size) {
-        _size = clamp(size, _mode == Mode::Chromatic ? 1 : 2, CONFIG_USER_SCALE_SIZE);
+        _size = clamp(size, validMode() == Mode::Chromatic ? 1 : 2, CONFIG_USER_SCALE_SIZE);
     }
 
     void editSize(int value, bool shift) {
@@ -148,14 +148,15 @@ public:
     //----------------------------------------
 
     bool isChromatic() const override {
-        return mode() == Mode::Chromatic;
+        return validMode() == Mode::Chromatic;
     }
 
     bool isNotePresent(int note) const override {
         if (note >= 12) {
             note = note -12;
         }
-        for (int i = 0; i < _size; i++) {
+        const int size = validSize();
+        for (int i = 0; i < size; i++) {
             if (_items[i] == note) {
                 return true;
             }
@@ -167,7 +168,8 @@ public:
         if (note >= 12) {
             note = note - 12;
         }
-         for (int i = 0; i < _size; i++) {
+        const int size = validSize();
+        for (int i = 0; i < size; i++) {
             if (_items[i] == note) {
                 return i;
             }
@@ -176,9 +178,10 @@ public:
     }
 
     int noteIndex(int note, int rootNote) const override {
-        int octave = roundDownDivide(note, _size);
+        const int size = validSize();
+        int octave = roundDownDivide(note, size);
 
-        int noteIndex = _items[note - octave * _size] + rootNote;
+        int noteIndex = _items[note - octave * size] + rootNote;
         while (noteIndex >= 12) {
             noteIndex -= 12;
             octave += 1;
@@ -188,7 +191,7 @@ public:
     }
 
     void noteName(StringBuilder &str, int note, int rootNote, Format format) const override {
-        switch (_mode) {
+        switch (validMode()) {
         case Mode::Chromatic:
             noteNameChromaticMode(str, note, rootNote, format);
             break;
@@ -204,7 +207,7 @@ public:
         int notesPerOctave_ = notesPerOctave();
         int octave = roundDownDivide(note, notesPerOctave_);
         int index = note - octave * notesPerOctave_;
-        switch (_mode) {
+        switch (validMode()) {
         case Mode::Chromatic:
             return octave + _items[index] * (1.f / 12.f);
         case Mode::Voltage:
@@ -216,7 +219,7 @@ public:
     }
 
     int noteFromVolts(float volts) const override {
-        switch (_mode) {
+        switch (validMode()) {
         case Mode::Chromatic:
             return noteFromVoltsChromaticMode(volts);
         case Mode::Voltage:
@@ -228,20 +231,31 @@ public:
     }
 
     int notesPerOctave() const override {
-        return _mode == Mode::Chromatic ? _size : _size - 1;
+        int size = validSize();
+        return validMode() == Mode::Chromatic ? size : size - 1;
     }
 
     static Array userScales;
     static const char *defaultName(int index);
 
 private:
+    Mode validMode() const {
+        return uint8_t(_mode) < uint8_t(Mode::Last) ? _mode : Mode::Chromatic;
+    }
+
+    int validSize() const {
+        const int minSize = validMode() == Mode::Voltage ? 2 : 1;
+        return clamp(int(_size), minSize, CONFIG_USER_SCALE_SIZE);
+    }
+
     void noteNameChromaticMode(StringBuilder &str, int note, int rootNote, Format format) const {
         bool printNote = format == Short1 || format == Long;
         bool printOctave = format == Short2 || format == Long;
 
-        int octave = roundDownDivide(note, _size);
+        const int size = validSize();
+        int octave = roundDownDivide(note, size);
 
-        int noteIndex = _items[note - octave * _size] + rootNote;
+        int noteIndex = _items[note - octave * size] + rootNote;
         while (noteIndex >= 12) {
             noteIndex -= 12;
             octave += 1;
@@ -277,7 +291,8 @@ private:
         semiNotes -= octave * 12;
 
         int index = -1;
-        for (int i = 0; i < _size; ++i) {
+        const int size = validSize();
+        for (int i = 0; i < size; ++i) {
             if (semiNotes < _items[i]) {
                 break;
             }
@@ -285,11 +300,11 @@ private:
         }
 
         if (index == -1) {
-            index = _size -1;
+            index = size -1;
             --octave;
         }
 
-        return octave * _size + index;
+        return octave * size + index;
     }
 
     int noteFromVoltsVoltageMode(float volts) const {
@@ -299,7 +314,8 @@ private:
         int itemValue = int(std::floor(volts * 1000.f));
 
         int index = -1;
-        for (int i = 0; i < _size; ++i) {
+        const int size = validSize();
+        for (int i = 0; i < size; ++i) {
             if (itemValue < _items[i]) {
                 break;
             }
@@ -307,15 +323,17 @@ private:
         }
 
         if (index == -1) {
-            index = _size -1;
+            index = size -1;
             --octave;
         }
 
-        return octave * (_size - 1) + index;
+        return octave * (size - 1) + index;
     }
 
     float octaveRangeVolts() const {
-        return (_items[_size - 1] - _items[0]) * (1.f / 1000.f);
+        const int size = validSize();
+        float span = (_items[size - 1] - _items[0]) * (1.f / 1000.f);
+        return span > 0.f ? span : 1.f;
     }
 
     char _name[NameLength + 1];

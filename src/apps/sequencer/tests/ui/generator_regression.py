@@ -36,6 +36,32 @@ class GeneratorRegressionTest(tf.UiTest):
 
         self.assertTrue(self.env.sequencer.isGeneratorPageTop)
 
+    def _open_chaos_generator_page(self, wreck_pattern=False):
+        c = self.controller
+
+        if not wreck_pattern:
+            self._open_generator_page(2)
+            return
+
+        self._open_generator_select_from_steps()
+        for _ in range(2):
+            c.right().wait(10)
+        c.encoder().wait(30)
+        self.assertTrue(self.env.sequencer.isModalPageTop)
+        c.right().wait(10)  # Wreck Pattern
+        c.encoder().wait(30)
+        self.assertTrue(self.env.sequencer.isModalPageTop)
+        c.press("f3").wait(30)  # Confirm WRECK warning
+        self.assertTrue(self.env.sequencer.isGeneratorPageTop)
+
+    def _trigger_generator_context_action(self, function_button):
+        c = self.controller
+        c.down("page").wait(10)
+        c.down("shift").wait(10)
+        c.press(function_button).wait(20)
+        c.up("shift").wait(10)
+        c.up("page").wait(20)
+
     def _lp_connect(self):
         seq = self.env.sequencer
         if not seq.launchpadControllerConnectedForTest:
@@ -225,6 +251,34 @@ class GeneratorRegressionTest(tf.UiTest):
         self._open_generator_page(3)
         c.right().wait(20)            # Encoder reroll (NEW EUCL path)
         c.encoder().wait(30)          # Apply
+        self.assertNotEqual(self._note_signature(sequence, 16), before)
+
+    def test_euclidean_param_edit_can_apply_without_explicit_reroll(self):
+        c = self.controller
+        p = self.env.sequencer.model.project
+
+        p.selectedTrackIndex = 0
+        p.setTrackMode(0, p.tracks[0].TrackMode.Note)
+        c.selectPage("steps")
+        p.selectedNoteSequenceLayer = p.selectedNoteSequence.Layer.Gate
+        sequence = p.selectedNoteSequence
+
+        for idx in range(16):
+            step = sequence.steps[idx]
+            step.gate = False
+            step.length = 6
+            step.note = 24 + (idx % 8)
+            step.slide = False
+
+        before = self._note_signature(sequence, 16)
+
+        self._open_generator_page(3)  # Euclidean
+        c.down("f2").wait(10)         # OFFSET
+        c.right().wait(20)            # param edit only (no NEW EUCL)
+        c.up("f2").wait(10)
+        c.encoder().wait(30)          # Apply
+
+        self.assertTrue(self.env.sequencer.isNoteSequenceEditPageTop)
         self.assertNotEqual(self._note_signature(sequence, 16), before)
 
     def test_random_variation_uses_probabilistic_keep_original_semantics(self):
@@ -825,6 +879,29 @@ class GeneratorRegressionTest(tf.UiTest):
 
         after_track1 = self._note_signature(seq1, 16)
         self.assertNotEqual(after_track1, before_track1)
+
+    def test_chaos_context_pivot_and_span_quick_edit_do_not_crash(self):
+        c = self.controller
+        p = self.env.sequencer.model.project
+
+        p.selectedTrackIndex = 0
+        p.selectedPatternIndex = 0
+        p.setTrackMode(0, p.tracks[0].TrackMode.Note)
+        c.selectPage("steps")
+        p.selectedNoteSequenceLayer = p.selectedNoteSequence.Layer.Note
+
+        for wreck_pattern in (False, True):
+            self._open_chaos_generator_page(wreck_pattern=wreck_pattern)
+
+            for function_button in ("f1", "f2"):
+                self._trigger_generator_context_action(function_button)
+                self.assertTrue(self.env.sequencer.isModalPageTop)
+                c.right().wait(20)
+                c.encoder().wait(20)
+                self.assertTrue(self.env.sequencer.isGeneratorPageTop)
+
+            c.press("f4").wait(20)
+            self.assertTrue(self.env.sequencer.isNoteSequenceEditPageTop)
 
     def test_euclidean_encoder_rotation_rerolls_pattern_without_function_keys(self):
         c = self.controller

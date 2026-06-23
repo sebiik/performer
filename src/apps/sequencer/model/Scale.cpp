@@ -72,6 +72,8 @@ static const int UserCount = UserScale::userScales.size();
 int Scale::Count = BuiltinCount + UserCount;
 
 const Scale &Scale::get(int index) {
+    index = clamp(index, 0, Count - 1);
+
     if (index < BuiltinCount) {
         return *scales[index];
     } else {
@@ -81,7 +83,7 @@ const Scale &Scale::get(int index) {
 
 const char *Scale::name(int index) {
     if (index < 0 || index >= Count) {
-        return nullptr;
+        return "?";
     }
 
     if (index < BuiltinCount) {
