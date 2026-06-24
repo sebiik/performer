@@ -7,7 +7,7 @@
 #include "engine/generators/ChaosEntropyGenerator.h"
 #include "engine/generators/ChaosGenerator.h"
 
-static const char *functionNames[] = { nullptr, nullptr, nullptr, nullptr, "CLOSE" };
+static const char * const functionNames[] = { nullptr, nullptr, nullptr, nullptr, "CLOSE" };
 
 namespace {
 int chaosScanIndexFromCell(int cell) {

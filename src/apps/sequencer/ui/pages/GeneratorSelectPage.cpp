@@ -8,7 +8,7 @@ enum class Function {
     OK      = 4,
 };
 
-static const char *functionNames[] = { nullptr, nullptr, nullptr, "CANCEL", "OK" };
+static const char * const functionNames[] = { nullptr, nullptr, nullptr, "CANCEL", "OK" };
 
 
 GeneratorSelectPage::GeneratorSelectPage(PageManager &manager, PageContext &context) :

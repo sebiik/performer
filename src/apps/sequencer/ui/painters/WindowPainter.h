@@ -17,7 +17,7 @@ public:
 
     static void drawFrame(Canvas &canvas, int x, int y, int w, int h);
 
-    static void drawFunctionKeys(Canvas &canvas, const char *names[], const KeyState &keyState, int highlight = -1);
+    static void drawFunctionKeys(Canvas &canvas, const char * const names[], const KeyState &keyState, int highlight = -1);
 
     static void drawClock(Canvas &canvas, const Engine &engine);
     static void drawActiveState(Canvas &canvas, int track, const char *trackName, int playPattern, int editPattern, bool snapshotActive, bool songActive);
@@ -26,7 +26,7 @@ public:
 
     static void drawHeader(Canvas &canvas, const Model &model, const Engine &engine, const char *mode, const char *flags=NULL);
     static void drawFooter(Canvas &canvas);
-    static void drawFooter(Canvas &canvas, const char *names[], const KeyState &keyState, int highlight = -1);
+    static void drawFooter(Canvas &canvas, const char * const names[], const KeyState &keyState, int highlight = -1);
 
     static void drawScrollbar(Canvas &canvas, int x, int y, int w, int h, int totalRows, int visibleRows, int displayRow);
 

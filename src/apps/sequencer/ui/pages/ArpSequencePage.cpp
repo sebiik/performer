@@ -38,7 +38,7 @@ static const ContextMenuModel::Item saveContextMenuItems[] = {
     { "SAVE AS"},
 };
 
-static const char *cancelFunctionNames[] = {
+static const char * const cancelFunctionNames[] = {
     "",
     "",
     "",

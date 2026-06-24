@@ -7,7 +7,7 @@ enum class Function {
     Yes = 4,
 };
 
-static const char *functionNames[] = { nullptr, nullptr, nullptr, "NO", "YES" };
+static const char * const functionNames[] = { nullptr, nullptr, nullptr, "NO", "YES" };
 
 
 ConfirmationPage::ConfirmationPage(PageManager &manager, PageContext &context) :

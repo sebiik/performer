@@ -45,7 +45,7 @@ enum class Function {
     Condition     = 4,
 };
 
-static const char *functionNames[] = { "GATE", "RETRIG", "LENGTH", "NOTE", "COND" };
+static const char * const functionNames[] = { "GATE", "RETRIG", "LENGTH", "NOTE", "COND" };
 
 
 static const NoteSequenceListModel::Item quickEditItems[8] = {
@@ -338,7 +338,7 @@ void NoteSequenceEditPage::draw(Canvas &canvas) {
 }
 
 void NoteSequenceEditPage::drawLaunchpadGeneratorOverlay(Canvas &canvas) {
-    static const char *overlayCells[2][6] = {
+    static const char * const overlayCells[2][6] = {
         { "RAND", "ACIDL", "VNDLZ", "EUCL", nullptr, "INITL" },
         { nullptr, "ACIDP", "WRECK", nullptr, nullptr, "INITS" },
     };

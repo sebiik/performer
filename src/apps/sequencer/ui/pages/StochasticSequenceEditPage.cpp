@@ -42,7 +42,7 @@ enum class Function {
     Condition     = 4,
 };
 
-static const char *functionNames[] = { "GATE", "RETRIG", "LENGTH", "NOTE", "COND" };
+static const char * const functionNames[] = { "GATE", "RETRIG", "LENGTH", "NOTE", "COND" };
 
 static const StochasticSequenceListModel::Item quickEditItems[8] = {
     StochasticSequenceListModel::Item::SequenceFirstStep,
@@ -338,7 +338,7 @@ void StochasticSequenceEditPage::draw(Canvas &canvas) {
 }
 
 void StochasticSequenceEditPage::drawLaunchpadGeneratorOverlay(Canvas &canvas) {
-    static const char *overlayCells[2][6] = {
+    static const char * const overlayCells[2][6] = {
         { "RAND", nullptr, "ENTPY", "EUCL", nullptr, "INITL" },
         { nullptr, nullptr, nullptr, nullptr, nullptr, "INITS" },
     };

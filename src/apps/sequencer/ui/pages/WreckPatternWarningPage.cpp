@@ -9,7 +9,7 @@ enum class Function {
     Cancel = 4,
 };
 
-static const char *functionNames[] = { "PROJ PAGE", nullptr, "WRECK", nullptr, "CANCEL" };
+static const char * const functionNames[] = { "PROJ PAGE", nullptr, "WRECK", nullptr, "CANCEL" };
 
 
 WreckPatternWarningPage::WreckPatternWarningPage(PageManager &manager, PageContext &context) :

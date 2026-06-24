@@ -32,7 +32,7 @@ void WindowPainter::drawFrame(Canvas &canvas, int x, int y, int w, int h) {
     canvas.drawRect(x, y, w, h);
 }
 
-void WindowPainter::drawFunctionKeys(Canvas &canvas, const char *names[], const KeyState &keyState, int highlight) {
+void WindowPainter::drawFunctionKeys(Canvas &canvas, const char * const names[], const KeyState &keyState, int highlight) {
     canvas.setBlendMode(BlendMode::Set);
     canvas.setColor(Color::Medium);
     canvas.hline(0, PageHeight - FooterHeight - 1, PageWidth);
@@ -69,7 +69,7 @@ void WindowPainter::drawFunctionKeys(Canvas &canvas, const char *names[], const 
 }
 
 void WindowPainter::drawClock(Canvas &canvas, const Engine &engine) {
-    static const char *clockModeName[] = { "A", "M", "S" };
+    static const char * const clockModeName[] = { "A", "M", "S" };
     const char *name = engine.recording() ? "R" : clockModeName[int(engine.clock().activeMode())];
 
     drawInvertedText(canvas, 2, 8 - 2, name);
@@ -143,7 +143,7 @@ void WindowPainter::drawFooter(Canvas &canvas) {
     canvas.hline(0, PageHeight - FooterHeight - 1, PageWidth);
 }
 
-void WindowPainter::drawFooter(Canvas &canvas, const char *names[], const KeyState &keyState, int highlight) {
+void WindowPainter::drawFooter(Canvas &canvas, const char * const names[], const KeyState &keyState, int highlight) {
     drawFunctionKeys(canvas, names, keyState, highlight);
 }
 

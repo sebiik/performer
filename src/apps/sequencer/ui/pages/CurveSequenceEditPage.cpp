@@ -38,7 +38,7 @@ enum class Function {
     Gate    = 3,
 };
 
-static const char *functionNames[] = { "SHAPE", "MIN", "MAX", "GATE", nullptr };
+static const char * const functionNames[] = { "SHAPE", "MIN", "MAX", "GATE", nullptr };
 
 static const CurveSequenceListModel::Item quickEditItems[8] = {
     CurveSequenceListModel::Item::FirstStep,
@@ -326,7 +326,7 @@ void CurveSequenceEditPage::draw(Canvas &canvas) {
 }
 
 void CurveSequenceEditPage::drawLaunchpadGeneratorOverlay(Canvas &canvas) {
-    static const char *overlayCells[2][6] = {
+    static const char * const overlayCells[2][6] = {
         { "RAND", nullptr, "ENTPY", "EUCL", nullptr, "INITL" },
         { nullptr, nullptr, nullptr, nullptr, nullptr, "INITS" },
     };

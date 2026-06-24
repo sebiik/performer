@@ -14,7 +14,7 @@ enum class Function {
     Stats   = 3,
 };
 
-static const char *functionNames[] = { "CV IN", "CV OUT", "MIDI", "STATS", nullptr };
+static const char * const functionNames[] = { "CV IN", "CV OUT", "MIDI", "STATS", nullptr };
 
 static void formatMidiMessage(StringBuilder &eventStr, StringBuilder &dataStr, const MidiMessage &msg) {
     if (msg.isChannelMessage()) {

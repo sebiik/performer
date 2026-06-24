@@ -22,7 +22,7 @@ static const ContextMenuModel::Item contextMenuItems[] = {
     { "SAVE" },
 };
 
-static const char *functionNames[] = { "USER1", "USER2", "USER3", "USER4", nullptr };
+static const char * const functionNames[] = { "USER1", "USER2", "USER3", "USER4", nullptr };
 
 UserScalePage::UserScalePage(PageManager &manager, PageContext &context) :
     ListPage(manager, context, _listModel)

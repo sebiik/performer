@@ -1,6 +1,7 @@
 #include "FileManager.h"
 #include "ProjectVersion.h"
 
+#include "SystemConfig.h"
 #include "Routing.h"
 #include "core/utils/StringBuilder.h"
 #include "core/fs/FileSystem.h"
@@ -21,7 +22,7 @@
 uint32_t FileManager::_volumeState = 0;
 uint32_t FileManager::_nextVolumeStateCheckTicks = 0;
 
-std::array<FileManager::CachedSlotInfo, FileManager::SlotCacheSize> FileManager::_cachedSlotInfos;
+CCMRAM_BSS std::array<FileManager::CachedSlotInfo, FileManager::SlotCacheSize> FileManager::_cachedSlotInfos;
 uint32_t FileManager::_cachedSlotInfoTicket = 0;
 
 FileManager::TaskExecuteCallback FileManager::_taskExecuteCallback;
@@ -38,7 +39,7 @@ struct FileTypeInfo {
     const char *ext;
 };
 
-FileTypeInfo fileTypeInfos[] = {
+static const FileTypeInfo fileTypeInfos[] = {
     { "PROJECTS", "PRO" },
     { "SCALES", "SCA" },
     {"SEQS", "NSQ"},

@@ -46,7 +46,7 @@ struct KnownDivisor {
 
 // divisors based on 48 PPQN
 
-static KnownDivisor knownDivisors[] = {
+static const KnownDivisor knownDivisors[] = {
     {   2,      1,  64, 'T',    8   },  // 1/64T
     {   3,      1,  64, '\0',   0   },  // 1/64
     {   4,      1,  32, 'T',    9   },  // 1/32T

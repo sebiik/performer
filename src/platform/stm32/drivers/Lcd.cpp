@@ -35,7 +35,7 @@ struct InitCommand {
     uint8_t data1;
 };
 
-static InitCommand initCommands[] = {
+static const InitCommand initCommands[] = {
     { 0xfd, 1, 0x12 }, // Set Command Lock (MCU protection status) | 0x12 = reset
     { 0xb3, 1, 0xd0 }, // Set Front Clock Divider / Oscillator Frequency
     { 0xca, 1, 0x3f }, // Set MUX Ratio | 0x3f = 64mux
@@ -199,7 +199,7 @@ void Lcd::sendData(uint8_t data) {
 }
 
 void Lcd::initialize() {
-    InitCommand *cmd = initCommands;
+    const InitCommand *cmd = initCommands;
     while (cmd->cmd) {
         sendCmd(cmd->cmd);
         if (cmd->len > 0) {

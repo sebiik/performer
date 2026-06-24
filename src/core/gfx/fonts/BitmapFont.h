@@ -14,8 +14,8 @@ typedef struct {
 // Font data
 typedef struct {
     uint8_t bpp;                // Bits per pixel
-    uint8_t *bitmap;            // Glyph bitmaps, concatenated
-    BitmapFontGlyph *glyphs;    // Glyph array
+    const uint8_t *bitmap;      // Glyph bitmaps, concatenated
+    const BitmapFontGlyph *glyphs; // Glyph array
     uint8_t first, last;        // ASCII extents
     uint8_t yAdvance;           // Newline distance (y axis)
 } BitmapFont;

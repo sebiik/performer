@@ -17,14 +17,14 @@ enum Function {
     Settings    = 4,
 };
 
-static const char *functionNames[] = { "CAL", nullptr, "UTILS", "UPDATE", "SETTINGS" };
-static const char *saveFunctionNames[] = { "CAL", "SAVE", "UTILS", "UPDATE", "SETTINGS" };
+static const char * const functionNames[] = { "CAL", nullptr, "UTILS", "UPDATE", "SETTINGS" };
+static const char * const saveFunctionNames[] = { "CAL", "SAVE", "UTILS", "UPDATE", "SETTINGS" };
 
 enum CalibrationEditFunction {
     Auto        = 0,
 };
 
-static const char *calibrationEditFunctionNames[] = { "AUTO", "SAVE", nullptr, nullptr, nullptr };
+static const char * const calibrationEditFunctionNames[] = { "AUTO", "SAVE", nullptr, nullptr, nullptr };
 
 enum class ContextAction {
     Init,

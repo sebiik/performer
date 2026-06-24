@@ -22,7 +22,7 @@ enum class Function {
     OK          = 4,
 };
 
-static const char *functionNames[] = { "BS", "DEL", "CLEAR", "CANCEL", "OK" };
+static const char * const functionNames[] = { "BS", "DEL", "CLEAR", "CANCEL", "OK" };
 
 
 TextInputPage::TextInputPage(PageManager &manager, PageContext &context) :
