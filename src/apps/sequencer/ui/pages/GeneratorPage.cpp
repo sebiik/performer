@@ -198,8 +198,16 @@ static bool euclideanGeneratorMode(Generator::Mode mode) {
     return mode == Generator::Mode::Euclidean;
 }
 
+static AcidSequenceBuilder::ApplyMode acidApplyMode(const Generator *generator) {
+    return static_cast<const AcidGenerator *>(generator)->applyMode();
+}
+
 static bool acidLayerGenerator(const Generator *generator) {
-    return generator->mode() == Generator::Mode::Acid && generator->paramCount() < 5;
+    return generator->mode() == Generator::Mode::Acid && acidApplyMode(generator) == AcidSequenceBuilder::ApplyMode::Layer;
+}
+
+static bool acidEuclideanPhraseGenerator(const Generator *generator) {
+    return generator->mode() == Generator::Mode::Acid && acidApplyMode(generator) == AcidSequenceBuilder::ApplyMode::EuclideanPhrase;
 }
 
 class GeneratorContextQuickEditModel : public ListModel {
@@ -423,7 +431,17 @@ void GeneratorPage::draw(Canvas &canvas) {
     switch (_generator->mode()) {
     case Generator::Mode::Acid: {
         const auto &acid = *static_cast<const AcidGenerator *>(_generator);
-        activeFunction(acid.applyMode() == AcidSequenceBuilder::ApplyMode::Phrase ? "ACID PHRASE" : "ACID LAYER");
+        switch (acid.applyMode()) {
+        case AcidSequenceBuilder::ApplyMode::Layer:
+            activeFunction("ACID LAYER");
+            break;
+        case AcidSequenceBuilder::ApplyMode::Phrase:
+            activeFunction("ACID PHRASE");
+            break;
+        case AcidSequenceBuilder::ApplyMode::EuclideanPhrase:
+            activeFunction("ACID EUCL");
+            break;
+        }
         break;
     }
     case Generator::Mode::Chaos: {
@@ -453,7 +471,7 @@ void GeneratorPage::draw(Canvas &canvas) {
     } else if (_generator->mode() == Generator::Mode::Random) {
         functionNames[0] = "A/B";
         functionNames[1] = "VAR";
-        functionNames[2] = "RANGE";
+        functionNames[2] = "RNG";
         functionNames[3] = "BIAS";
         functionNames[4] = "NEW RAND";
     } else if (_generator->mode() == Generator::Mode::Acid) {
@@ -463,10 +481,16 @@ void GeneratorPage::draw(Canvas &canvas) {
             functionNames[2] = _generator->paramName(1);
             functionNames[3] = nullptr;
             functionNames[4] = "NEW RAND";
+        } else if (acidEuclideanPhraseGenerator(_generator)) {
+            functionNames[0] = "A/B";
+            functionNames[1] = "OFFSET";
+            functionNames[2] = "STEPS";
+            functionNames[3] = "BEATS";
+            functionNames[4] = "NEW RAND";
         } else {
             functionNames[0] = "A/B";
             functionNames[1] = "VAR";
-            functionNames[2] = "RANGE";
+            functionNames[2] = "RNG";
             functionNames[3] = "SLIDE";
             functionNames[4] = "NEW RAND";
         }
@@ -591,6 +615,11 @@ void GeneratorPage::draw(Canvas &canvas) {
                 drawParamValue(0, 0); // Seed / ORIGINAL
                 drawParamValue(1, 2); // Var
                 drawParamValue(2, 1); // layer main param
+            } else if (acidEuclideanPhraseGenerator(_generator)) {
+                drawParamValue(0, 0); // Seed / ORIGINAL
+                drawParamValue(1, 1); // Offset
+                drawParamValue(2, 2); // Steps
+                drawParamValue(3, 3); // Beats
             } else {
                 drawParamValue(0, 0); // Seed / ORIGINAL
                 drawParamValue(1, 4); // Var
@@ -1019,6 +1048,15 @@ void GeneratorPage::encoder(EncoderEvent &event) {
                 }
             }
 
+            if (acidEuclideanPhraseGenerator(_generator)) {
+                switch (functionIndex) {
+                case 1: return 1; // Offset
+                case 2: return 2; // Steps
+                case 3: return 3; // Beats
+                default: return -1;
+                }
+            }
+
             switch (functionIndex) {
             case 1: return 4; // Var
             case 2: return 3; // Range
@@ -1085,15 +1123,15 @@ void GeneratorPage::encoder(EncoderEvent &event) {
     if (changed) {
         if (rerollTriggered && abPreviewGenerator(_generator->mode())) {
             _previewArmed = true;
-        } else if (euclideanGeneratorMode(_generator->mode()) && paramEditTriggered) {
-            // Euclidean parameter edits should be directly committable without a separate NEW EUCL reroll.
+        } else if ((euclideanGeneratorMode(_generator->mode()) || acidEuclideanPhraseGenerator(_generator)) && paramEditTriggered) {
+            // Euclidean-style parameter edits should be directly committable without a separate reroll.
             _previewArmed = true;
         }
         _launchpadResetState = false;
         _generator->update();
         if (rerollTriggered && abPreviewGenerator(_generator->mode())) {
             _generator->showPreview();
-        } else if (euclideanGeneratorMode(_generator->mode()) && paramEditTriggered) {
+        } else if ((euclideanGeneratorMode(_generator->mode()) || acidEuclideanPhraseGenerator(_generator)) && paramEditTriggered) {
             _generator->showPreview();
         } else if (!abPreviewGenerator(_generator->mode()) || _generator->showingPreview()) {
             _generator->showPreview();
@@ -1387,7 +1425,8 @@ void GeneratorPage::drawAcidGenerator(Canvas &canvas, const AcidGenerator &gener
         }
     };
 
-    if (generator.applyMode() == AcidSequenceBuilder::ApplyMode::Phrase) {
+    if (generator.applyMode() == AcidSequenceBuilder::ApplyMode::Phrase ||
+        generator.applyMode() == AcidSequenceBuilder::ApplyMode::EuclideanPhrase) {
         constexpr int gateTop = PlotArea::Top;
         constexpr int gateHeight = 6;
         constexpr int noteTop = gateTop + gateHeight + 2;
@@ -1698,6 +1737,10 @@ void GeneratorPage::contextShow(bool doubleClick) {
         if (acidLayerGenerator(_generator)) {
             _contextMenuItems[0] = { "" };
             _contextMenuItems[1] = { "" };
+        } else if (acidEuclideanPhraseGenerator(_generator)) {
+            std::snprintf(_contextMenuAuxLabel, sizeof(_contextMenuAuxLabel), "RNG %d%%", acid->range());
+            _contextMenuItems[0] = { "" };
+            _contextMenuItems[1] = { _contextMenuAuxLabel };
         } else {
             std::snprintf(_contextMenuAuxLabel, sizeof(_contextMenuAuxLabel), "DENS %d%%", acid->density());
             _contextMenuItems[0] = { "" };
@@ -1815,10 +1858,16 @@ void GeneratorPage::contextAction(int index) {
                 });
                 _manager.pages().quickEdit.showCompact(gGeneratorContextQuickEditModel, 0, 1);
             } else if (_generator->mode() == Generator::Mode::Acid && !acidLayerGenerator(_generator)) {
-                gGeneratorContextQuickEditModel.configure(_generator, 1, "DENS", [&] {
+                const bool acidEucl = acidEuclideanPhraseGenerator(_generator);
+                gGeneratorContextQuickEditModel.configure(_generator, acidEucl ? 4 : 1, acidEucl ? "RNG" : "DENS", [&] {
                     _launchpadResetState = false;
+                    if (acidEucl) {
+                        _previewArmed = true;
+                    }
                     _generator->update();
-                    if (!abPreviewGenerator(_generator->mode()) || _generator->showingPreview()) {
+                    if (acidEucl) {
+                        _generator->showPreview();
+                    } else if (!abPreviewGenerator(_generator->mode()) || _generator->showingPreview()) {
                         _generator->showPreview();
                     }
                 });
@@ -1948,36 +1997,19 @@ void GeneratorPage::revert() {
     close();
 }
 
-void GeneratorPage::commit() {
+bool GeneratorPage::commit() {
     if (!ensureBoundTrackContext()) {
-        return;
+        return false;
     }
 
     if (chaosStyledGeneratorMode(_generator->mode()) && (!_previewArmed || !_generator->showingPreview())) {
         showMessage("PRESS CHAOS");
-        return;
+        return false;
     }
 
     if (abPreviewGenerator(_generator->mode()) && !_previewArmed && !_generator->showingPreview()) {
-        _applied = true;
-        auto &pages = _manager.pages();
-        if (pages.noteSequenceEdit.launchpadGeneratorModeActive()) {
-            pages.noteSequenceEdit.setLaunchpadGeneratorModeActive(false);
-        }
-        if (pages.curveSequenceEdit.launchpadGeneratorModeActive()) {
-            pages.curveSequenceEdit.setLaunchpadGeneratorModeActive(false);
-        }
-        if (pages.stochasticSequenceEdit.launchpadGeneratorModeActive()) {
-            pages.stochasticSequenceEdit.setLaunchpadGeneratorModeActive(false);
-        }
-        if (pages.logicSequenceEdit.launchpadGeneratorModeActive()) {
-            pages.logicSequenceEdit.setLaunchpadGeneratorModeActive(false);
-        }
-        if (pages.arpSequenceEdit.launchpadGeneratorModeActive()) {
-            pages.arpSequenceEdit.setLaunchpadGeneratorModeActive(false);
-        }
-        close();
-        return;
+        showMessage("PRESS NEW");
+        return false;
     }
 
     _stepSelection->clear();
@@ -2000,6 +2032,7 @@ void GeneratorPage::commit() {
         pages.arpSequenceEdit.setLaunchpadGeneratorModeActive(false);
     }
     close();
+    return true;
 }
 
 void GeneratorPage::togglePreview() {
@@ -2008,6 +2041,7 @@ void GeneratorPage::togglePreview() {
     }
 
     if (abPreviewGenerator(_generator->mode()) && !_previewArmed && !_generator->showingPreview()) {
+        showMessage("PRESS NEW");
         return;
     }
 
@@ -2097,7 +2131,7 @@ void GeneratorPage::showPreviewStateMessage() {
     } else if (entropyGeneratorMode(_generator->mode())) {
         showMessage("UNLEASHED");
     } else if (euclideanGeneratorMode(_generator->mode())) {
-        showMessage("CURRENT EUCLIDEAN");
+        showMessage("EUCL PREVIEW");
     } else {
         showMessage(seedDrivenGenerator(_generator->mode()) ? "CURRENT SEED" : "PREVIEW");
     }

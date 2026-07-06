@@ -251,7 +251,7 @@ const char *ChaosDefaultsPage::activeFunction() const {
     case ChaosDefaultsListModel::Mode::Pattern:
         return "Pat Layers to Wreck";
     case ChaosDefaultsListModel::Mode::Entropy:
-        return "EntropyLayerToUnleash";
+        return "ENTPY LAYER TO UNLEASH";
     }
     return "";
 }

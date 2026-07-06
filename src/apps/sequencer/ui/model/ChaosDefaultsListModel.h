@@ -42,7 +42,7 @@ public:
             str("Pat Layers to Wreck");
             break;
         case Mode::Entropy:
-            str("EntropyLayerToUnleash");
+            str("Entpy Layers To Unleash");
             break;
         }
     }

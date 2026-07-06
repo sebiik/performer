@@ -2,7 +2,7 @@
   const storageKey = "performer-docs-theme";
   const invertTheme = "invert";
   const stickyOffset = 10;
-  const vinxFirmwareVersion = "v0.4.4";
+  const vinxFirmwareVersion = "v0.4.5";
   let stickyButtons = [];
 
   function applyTheme(theme) {

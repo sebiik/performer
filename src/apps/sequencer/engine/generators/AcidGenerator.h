@@ -18,6 +18,9 @@ public:
         Slide,
         Range,
         Variation,
+        Steps,
+        Beats,
+        Offset,
         Last
     };
 
@@ -27,12 +30,18 @@ public:
         uint8_t slide = 25;
         uint8_t range = 35;
         uint8_t variation = 100;
+        uint8_t steps = 16;
+        uint8_t beats = 4;
+        uint8_t offset = 0;
     };
 
     static constexpr uint8_t DefaultDensity = 50;
     static constexpr uint8_t DefaultSlide = 10;
     static constexpr uint8_t DefaultRange = 35;
     static constexpr uint8_t DefaultVariation = 100;
+    static constexpr uint8_t DefaultSteps = 16;
+    static constexpr uint8_t DefaultBeats = 4;
+    static constexpr uint8_t DefaultOffset = 0;
 
     AcidGenerator(SequenceBuilder &builder, Params &params, std::bitset<CONFIG_STEP_COUNT> &selected);
 
@@ -62,6 +71,19 @@ public:
     int variation() const { return _params.variation; }
     void setVariation(int variation) { _params.variation = clamp(variation, 0, 100); }
 
+    int steps() const { return _params.steps; }
+    void setSteps(int steps) {
+        _params.steps = clamp(steps, 1, CONFIG_STEP_COUNT);
+        _params.beats = clamp(int(_params.beats), 1, int(_params.steps));
+        _params.offset = clamp(int(_params.offset), 0, int(_params.steps) - 1);
+    }
+
+    int beats() const { return _params.beats; }
+    void setBeats(int beats) { _params.beats = clamp(beats, 1, int(_params.steps)); }
+
+    int offset() const { return _params.offset; }
+    void setOffset(int offset) { _params.offset = clamp(offset, 0, int(_params.steps) - 1); }
+
     int displayValue(int index) const;
     AcidSequenceBuilder::ApplyMode applyMode() const { return _acidBuilder.applyMode(); }
     NoteSequence::Layer layer() const { return _acidBuilder.layer(); }
@@ -84,6 +106,7 @@ private:
     void updateLayerNote(class Random &rng, const std::array<int, CONFIG_STEP_COUNT> &targetSteps, int targetCount);
     void updateLayerSlide(class Random &rng, const std::array<int, CONFIG_STEP_COUNT> &targetSteps, int targetCount);
     void updatePhrase(class Random &rng, const std::array<int, CONFIG_STEP_COUNT> &targetSteps, int targetCount);
+    void updateEuclideanPhrase(class Random &rng, const std::array<int, CONFIG_STEP_COUNT> &targetSteps, int targetCount);
 
     Params &_params;
     AcidSequenceBuilder &_acidBuilder;

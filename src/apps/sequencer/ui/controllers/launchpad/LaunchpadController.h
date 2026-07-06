@@ -88,6 +88,7 @@ private:
         Random,
         AcidPhrase,
         AcidLayer,
+        AcidEuclideanPhrase,
         Vandalize,
         Wreck,
         Entropy,

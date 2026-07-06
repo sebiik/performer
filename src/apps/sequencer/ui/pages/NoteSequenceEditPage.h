@@ -18,6 +18,7 @@ public:
         Random,
         AcidPhrase,
         AcidLayer,
+        AcidEuclideanPhrase,
         Vandalize,
         Wreck,
         Euclidean,

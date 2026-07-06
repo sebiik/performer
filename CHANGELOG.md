@@ -4,6 +4,13 @@
 
 <sub>Starting from `v0.3.2-vinx.1` (16 March 2026), this changelog includes changes specific to the Vinx Scorza fork. All entries below `v0.3.2-vinx.1` are inherited from the Mebitek fork history and are kept here as upstream reference. From the first standalone Vinx release onward, Vinx uses standalone semantic versioning (`v0.x.y`) while preserving the earlier `v0.3.2-vinx.*` entries as historical lineage. I try to preserve backward compatibility with older projects, settings, and workflows where possible, but I do not guarantee it for Vinx-specific changes.</sub>
 
+# v0.4.5
+- Add `Acid Eucl Phrase` as an Acid phrase workflow with Euclidean-shaped gate structure, integrated in machine UI and Launchpad Generators Mode.
+- Harden `Routing` / CV target handling by classifying continuous, discrete, and boolean/trigger-like destinations more explicitly and rejecting incompatible target/track combinations more deterministically.
+- Reduce SRAM pressure with conservative memory cleanup and keep simulator/web assets aligned with current firmware behavior.
+- Fix crash-prone `Wreck Pattern` paths while preserving the preview/cancel/apply safety model.
+- Keep project format unchanged (`Version40`), so existing `v0.4.4` projects remain readable.
+
 # v0.4.4
 - Align `Stochastic` and `Arp` pitch evaluation with selected scale/root when transpose is routed. Legacy bypass-scale slots are masked by musical scales, transpose behaves as register movement inside the selected scale/root, and explicit `Semitones` keeps chromatic legacy behavior.
 - Make `Euclidean` parameter edits immediately committable: editing `Offset`, `Steps`, or `Beats` now arms and displays a valid preview, so `Apply` can write the sequence without a separate `NEW EUCL` reroll.

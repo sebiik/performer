@@ -1,5 +1,7 @@
 #include "AcidGenerator.h"
 
+#include "Rhythm.h"
+
 #include "core/utils/Random.h"
 
 #include <ctime>
@@ -28,7 +30,10 @@ AcidGenerator::AcidGenerator(SequenceBuilder &builder, Params &params, std::bits
 
 int AcidGenerator::paramCount() const {
     if (_acidBuilder.applyMode() == AcidSequenceBuilder::ApplyMode::Phrase) {
-        return int(Param::Last);
+        return 5;
+    }
+    if (_acidBuilder.applyMode() == AcidSequenceBuilder::ApplyMode::EuclideanPhrase) {
+        return 5;
     }
 
     switch (_acidBuilder.layer()) {
@@ -44,6 +49,17 @@ int AcidGenerator::paramCount() const {
 AcidGenerator::Param AcidGenerator::visibleParam(int index) const {
     if (_acidBuilder.applyMode() == AcidSequenceBuilder::ApplyMode::Phrase) {
         return Param(index);
+    }
+    if (_acidBuilder.applyMode() == AcidSequenceBuilder::ApplyMode::EuclideanPhrase) {
+        switch (index) {
+        case 0: return Param::Seed;
+        case 1: return Param::Offset;
+        case 2: return Param::Steps;
+        case 3: return Param::Beats;
+        case 4: return Param::Range;
+        default: break;
+        }
+        return Param::Last;
     }
 
     switch (_acidBuilder.layer()) {
@@ -85,6 +101,9 @@ const char *AcidGenerator::paramName(int index) const {
     case Param::Slide:     return "Slide";
     case Param::Range:     return "Range";
     case Param::Variation: return "Var";
+    case Param::Steps:     return "Steps";
+    case Param::Beats:     return "Beats";
+    case Param::Offset:    return "Offset";
     case Param::Last:      break;
     }
     return nullptr;
@@ -111,6 +130,15 @@ void AcidGenerator::editParam(int index, int value, bool shift) {
     case Param::Variation:
         setVariation(variation() + value);
         break;
+    case Param::Steps:
+        setSteps(steps() + value);
+        break;
+    case Param::Beats:
+        setBeats(beats() + value);
+        break;
+    case Param::Offset:
+        setOffset(offset() + value);
+        break;
     case Param::Last:
         break;
     }
@@ -133,6 +161,15 @@ void AcidGenerator::printParam(int index, StringBuilder &str) const {
     case Param::Variation:
         str("%d%%", variation());
         break;
+    case Param::Steps:
+        str("%d", steps());
+        break;
+    case Param::Beats:
+        str("%d", beats());
+        break;
+    case Param::Offset:
+        str("%d", offset());
+        break;
     case Param::Last:
         break;
     }
@@ -143,6 +180,9 @@ void AcidGenerator::init() {
     setSlide(DefaultSlide);
     setRange(DefaultRange);
     setVariation(DefaultVariation);
+    setSteps(DefaultSteps);
+    setBeats(DefaultBeats);
+    setOffset(DefaultOffset);
     update();
 }
 
@@ -154,6 +194,9 @@ void AcidGenerator::randomizeParams() {
     setSlide(int(rng.nextRange(101)));
     setRange(int(rng.nextRange(101)));
     setVariation(100);
+    setSteps(1 + int(rng.nextRange(CONFIG_STEP_COUNT)));
+    setBeats(1 + int(rng.nextRange(steps())));
+    setOffset(int(rng.nextRange(steps())));
 }
 
 void AcidGenerator::randomizeSeed() {
@@ -174,6 +217,16 @@ void AcidGenerator::randomizeContextParams() {
 
     Random rng(_params.seed ^ 0x68E31DA4u);
 
+    if (_acidBuilder.applyMode() == AcidSequenceBuilder::ApplyMode::EuclideanPhrase) {
+        setSteps(1 + int(rng.nextRange(CONFIG_STEP_COUNT)));
+        setBeats(1 + int(rng.nextRange(steps())));
+        setOffset(int(rng.nextRange(steps())));
+        setRange(int(rng.nextRange(101)));
+        setSlide(int(rng.nextRange(26)));
+        setVariation(100);
+        return;
+    }
+
     for (int i = 1; i < paramCount(); ++i) {
         switch (visibleParam(i)) {
         case Param::Density:
@@ -186,6 +239,9 @@ void AcidGenerator::randomizeContextParams() {
             setRange(int(rng.nextRange(101)));
             break;
         case Param::Variation:
+        case Param::Steps:
+        case Param::Beats:
+        case Param::Offset:
         case Param::Seed:
         case Param::Last:
             break;
@@ -615,6 +671,104 @@ void AcidGenerator::updatePhrase(Random &rng, const std::array<int, CONFIG_STEP_
     }
 }
 
+void AcidGenerator::updateEuclideanPhrase(Random &rng, const std::array<int, CONFIG_STEP_COUNT> &targetSteps, int targetCount) {
+    auto &preview = _acidBuilder.previewSequence();
+    const auto &original = _acidBuilder.originalSequence();
+    const auto pattern = Rhythm::euclidean(beats(), steps()).shifted(offset());
+
+    const int motifLength = 3 + int(rng.nextRange(4));
+    const int anchor = averageOriginalNote(targetSteps, targetCount);
+    const int span = melodicSpan();
+    const int minNote = clamp(anchor - span, NoteSequence::Note::Min, NoteSequence::Note::Max);
+    const int maxNote = clamp(anchor + span, NoteSequence::Note::Min, NoteSequence::Note::Max);
+    const int maxStep = maxStepDelta();
+
+    int currentNote = clamp(anchor, minNote, maxNote);
+    std::array<bool, CONFIG_STEP_COUNT> gateState = {};
+    std::array<int, CONFIG_STEP_COUNT> noteState = {};
+
+    for (int i = 0; i < targetCount; ++i) {
+        const int stepIndex = targetSteps[i];
+        const auto &originalStep = original.step(stepIndex);
+        auto &step = preview.step(stepIndex);
+
+        gateState[i] = pattern[i % steps()];
+        noteState[i] = originalStep.note();
+        step.setGate(false);
+        step.setSlide(false);
+    }
+
+    for (int i = 0; i < targetCount; ++i) {
+        const int stepIndex = targetSteps[i];
+        auto &step = preview.step(stepIndex);
+
+        if (!gateState[i]) {
+            continue;
+        }
+
+        step.setGate(true);
+
+        const int motifNoteBias = int((rng.next() >> ((i % motifLength) * 2)) & 0x0f);
+        currentNote = clamp(currentNote + nextNoteDelta(rng, motifLength, motifNoteBias, maxStep), minNote, maxNote);
+
+        noteState[i] = currentNote;
+        step.setNote(currentNote);
+    }
+
+    if (slide() <= 0) {
+        return;
+    }
+
+    std::array<SlideCandidate, CONFIG_STEP_COUNT> candidates = {};
+    int candidateCount = 0;
+
+    for (int i = 0; i < targetCount; ++i) {
+        if (!gateState[i]) {
+            continue;
+        }
+
+        int next = -1;
+        for (int j = i + 1; j < targetCount; ++j) {
+            if (gateState[j]) {
+                next = j;
+                break;
+            }
+        }
+
+        if (next < 0) {
+            continue;
+        }
+
+        const int interval = std::abs(noteState[next] - noteState[i]);
+        const int motifSlideBias = int((rng.next() >> ((i % motifLength) * 2)) & 0x0f);
+        int score = 64;
+        score += interval <= 1 ? 30 : (interval <= 3 ? 16 : -8);
+        score += (motifSlideBias % 3 == 0) ? 10 : 0;
+        score += motifLength > 4 ? 4 : 0;
+        score += int(rng.nextRange(33)) - 16;
+
+        candidates[candidateCount].stepIndex = targetSteps[i];
+        candidates[candidateCount].score = score;
+        ++candidateCount;
+    }
+
+    if (candidateCount == 0) {
+        return;
+    }
+
+    const int desiredSlides = desiredSlideCount(targetCount, candidateCount);
+    for (int i = 0; i < desiredSlides; ++i) {
+        int bestIndex = i;
+        for (int j = i + 1; j < candidateCount; ++j) {
+            if (candidates[j].score > candidates[bestIndex].score) {
+                bestIndex = j;
+            }
+        }
+        std::swap(candidates[i], candidates[bestIndex]);
+        preview.step(candidates[i].stepIndex).setSlide(true);
+    }
+}
+
 void AcidGenerator::update() {
     _acidBuilder.resetPreview();
 
@@ -643,6 +797,9 @@ void AcidGenerator::update() {
         break;
     case AcidSequenceBuilder::ApplyMode::Phrase:
         updatePhrase(rng, targetSteps, targetCount);
+        break;
+    case AcidSequenceBuilder::ApplyMode::EuclideanPhrase:
+        updateEuclideanPhrase(rng, targetSteps, targetCount);
         break;
     }
 

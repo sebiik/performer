@@ -12,13 +12,16 @@ public:
 
     AcidSequenceBuilder::ApplyMode rowToMode(int row) const {
         if (_allowLayer) {
-            return row == 0 ? AcidSequenceBuilder::ApplyMode::Layer : AcidSequenceBuilder::ApplyMode::Phrase;
+            if (row == 0) {
+                return AcidSequenceBuilder::ApplyMode::Layer;
+            }
+            return row == 1 ? AcidSequenceBuilder::ApplyMode::Phrase : AcidSequenceBuilder::ApplyMode::EuclideanPhrase;
         }
-        return AcidSequenceBuilder::ApplyMode::Phrase;
+        return row == 0 ? AcidSequenceBuilder::ApplyMode::Phrase : AcidSequenceBuilder::ApplyMode::EuclideanPhrase;
     }
 
     virtual int rows() const override {
-        return _allowLayer ? 2 : 1;
+        return _allowLayer ? 3 : 2;
     }
 
     virtual int columns() const override {
@@ -36,6 +39,9 @@ public:
             break;
         case AcidSequenceBuilder::ApplyMode::Phrase:
             str("Phrase");
+            break;
+        case AcidSequenceBuilder::ApplyMode::EuclideanPhrase:
+            str("Eucl Phrase");
             break;
         }
     }

@@ -36,6 +36,11 @@ private:
     struct RouteState {
         Routing::Target target = Routing::Target::None;
         uint8_t tracks = 0;
+        float value = 0.f;
+        int16_t discreteValue = 0;
+        bool booleanValue = false;
+        bool stabilizerInitialized = false;
+        bool valueInitialized = false;
     };
 
     std::array<RouteState, CONFIG_ROUTE_COUNT> _routeStates;

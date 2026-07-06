@@ -1,5 +1,6 @@
 #include "UnitTest.h"
 
+#include "apps/sequencer/engine/generators/AcidGenerator.h"
 #include "apps/sequencer/engine/generators/ChaosGenerator.h"
 #include "apps/sequencer/engine/generators/EuclideanGenerator.h"
 #include "apps/sequencer/engine/generators/RandomGenerator.h"
@@ -143,6 +144,101 @@ UNIT_TEST("GeneratorSemantics") {
         }
 
         expectTrue(changed);
+    }
+
+    CASE("Acid Euclidean Phrase uses Euclidean gates inside the target window") {
+        NoteSequence sequence;
+        sequence.clear();
+        sequence.setFirstStep(0);
+        sequence.setLastStep(15);
+
+        for (int i = 0; i < 16; ++i) {
+            auto &step = sequence.step(i);
+            step.setGate(true);
+            step.setNote(0);
+        }
+
+        std::bitset<CONFIG_STEP_COUNT> selected;
+        selectFirstSteps(selected, 16);
+
+        AcidSequenceBuilder builder(sequence, NoteSequence::Layer::Note, AcidSequenceBuilder::ApplyMode::EuclideanPhrase, selected);
+
+        AcidGenerator::Params params;
+        params.seed = 0x2468ACE0u;
+        params.steps = 8;
+        params.beats = 3;
+        params.offset = 0;
+        params.range = 35;
+        params.slide = 0;
+        params.variation = 100;
+
+        AcidGenerator generator(builder, params, selected);
+
+        const auto &preview = builder.previewSequence();
+        int gateCount = 0;
+        for (int i = 0; i < 16; ++i) {
+            gateCount += preview.step(i).gate() ? 1 : 0;
+        }
+
+        expectEqual(6, gateCount);
+    }
+
+    CASE("Acid Euclidean Phrase NEW RAND keeps generated params in valid ranges") {
+        NoteSequence sequence;
+        sequence.clear();
+        sequence.setFirstStep(0);
+        sequence.setLastStep(15);
+
+        std::bitset<CONFIG_STEP_COUNT> selected;
+        selectFirstSteps(selected, 16);
+
+        AcidSequenceBuilder builder(sequence, NoteSequence::Layer::Note, AcidSequenceBuilder::ApplyMode::EuclideanPhrase, selected);
+
+        AcidGenerator::Params params;
+        params.seed = 0x1234ABCDu;
+        AcidGenerator generator(builder, params, selected);
+
+        for (int i = 0; i < 16; ++i) {
+            generator.randomizeContextParams();
+            generator.update();
+
+            expectTrue(generator.steps() >= 1);
+            expectTrue(generator.steps() <= CONFIG_STEP_COUNT);
+            expectTrue(generator.beats() >= 1);
+            expectTrue(generator.beats() <= generator.steps());
+            expectTrue(generator.offset() >= 0);
+            expectTrue(generator.offset() < generator.steps());
+            expectTrue(generator.range() >= 0);
+            expectTrue(generator.range() <= 100);
+            expectTrue(generator.slide() >= 0);
+            expectTrue(generator.slide() <= 25);
+            expectEqual(100, generator.variation());
+        }
+    }
+
+    CASE("Acid Euclidean Phrase offset follows the current step window") {
+        NoteSequence sequence;
+        sequence.clear();
+
+        std::bitset<CONFIG_STEP_COUNT> selected;
+        selectFirstSteps(selected, 16);
+
+        AcidSequenceBuilder builder(sequence, NoteSequence::Layer::Note, AcidSequenceBuilder::ApplyMode::EuclideanPhrase, selected);
+
+        AcidGenerator::Params params;
+        params.steps = 16;
+        params.beats = 4;
+        params.offset = 15;
+
+        AcidGenerator generator(builder, params, selected);
+        expectEqual(15, generator.offset());
+
+        generator.setSteps(4);
+        expectEqual(4, generator.steps());
+        expectEqual(3, generator.offset());
+
+        generator.setOffset(12);
+        expectEqual(3, generator.offset());
     }
 
     CASE("Random note layer range stays close to the original register at low range") {

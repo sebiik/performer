@@ -3,6 +3,7 @@
 #include "Project.h"
 #include "ProjectVersion.h"
 
+#include <algorithm>
 #include <cmath>
 
 //----------------------------------------
@@ -179,6 +180,22 @@ int Routing::checkRouteConflict(const Route &editedRoute, const Route &existingR
     return -1;
 }
 
+uint8_t Routing::supportedTracks(Target target, uint8_t tracks) const {
+    if (!isPerTrackTarget(target)) {
+        return 0;
+    }
+
+    uint8_t supported = 0;
+    for (int trackIndex = 0; trackIndex < CONFIG_TRACK_COUNT; ++trackIndex) {
+        const uint8_t trackBit = 1 << trackIndex;
+        if ((tracks & trackBit) &&
+            targetSupportedByTrackMode(target, uint8_t(_project.track(trackIndex).trackMode()))) {
+            supported |= trackBit;
+        }
+    }
+    return supported;
+}
+
 void Routing::writeTarget(Target target, uint8_t tracks, float normalized) {
     float floatValue = denormalizeTargetValue(target, normalized);
     int intValue = std::round(floatValue);
@@ -191,6 +208,9 @@ void Routing::writeTarget(Target target, uint8_t tracks, float normalized) {
         for (int trackIndex = 0; trackIndex < CONFIG_TRACK_COUNT; ++trackIndex) {
             if (tracks & (1<<trackIndex)) {
                 auto &track = _project.track(trackIndex);
+                if (!targetSupportedByTrackMode(target, uint8_t(track.trackMode()))) {
+                    continue;
+                }
                 switch (track.trackMode()) {
                 case Track::TrackMode::Note:
                     if (isTrackTarget(target)) {
@@ -260,6 +280,140 @@ void Routing::read(VersionedSerializedReader &reader) {
 
 static std::array<uint8_t, size_t(Routing::Target::Last)> routedSet;
 static_assert(sizeof(uint8_t) * 8 >= CONFIG_TRACK_COUNT, "track bits do not fit");
+
+bool Routing::isBooleanTarget(Target target) {
+    switch (target) {
+    case Target::Play:
+    case Target::PlayToggle:
+    case Target::Record:
+    case Target::RecordToggle:
+    case Target::TapTempo:
+    case Target::Mute:
+    case Target::Fill:
+    case Target::CurrentRecordStep:
+    case Target::Reseed:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool Routing::isContinuousTarget(Target target) {
+    switch (target) {
+    case Target::Tempo:
+    case Target::Swing:
+    case Target::FillAmount:
+    case Target::SlideTime:
+    case Target::Offset:
+    case Target::CurveMin:
+    case Target::CurveMax:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool Routing::targetSupportedByTrackMode(Target target, uint8_t trackMode) {
+    switch (target) {
+    case Target::None:
+        return false;
+    case Target::Play:
+    case Target::PlayToggle:
+    case Target::Record:
+    case Target::RecordToggle:
+    case Target::TapTempo:
+    case Target::Tempo:
+    case Target::Swing:
+        return true;
+    default:
+        break;
+    }
+
+    const auto mode = Track::TrackMode(trackMode);
+    switch (target) {
+    case Target::Mute:
+    case Target::Fill:
+    case Target::FillAmount:
+    case Target::Pattern:
+        return mode != Track::TrackMode::Last;
+
+    case Target::SlideTime:
+        return mode == Track::TrackMode::Note ||
+               mode == Track::TrackMode::Curve ||
+               mode == Track::TrackMode::MidiCv ||
+               mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Logic ||
+               mode == Track::TrackMode::Arp;
+    case Target::Octave:
+        return mode == Track::TrackMode::Note ||
+               mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Logic ||
+               mode == Track::TrackMode::Arp;
+    case Target::Transpose:
+        return mode == Track::TrackMode::Note ||
+               mode == Track::TrackMode::MidiCv ||
+               mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Logic ||
+               mode == Track::TrackMode::Arp;
+    case Target::Offset:
+    case Target::ShapeProbabilityBias:
+    case Target::CurveMin:
+    case Target::CurveMax:
+        return mode == Track::TrackMode::Curve;
+    case Target::Rotate:
+        return mode == Track::TrackMode::Note ||
+               mode == Track::TrackMode::Curve ||
+               mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Logic;
+    case Target::GateProbabilityBias:
+    case Target::RetriggerProbabilityBias:
+    case Target::LengthBias:
+    case Target::NoteProbabilityBias:
+        return mode == Track::TrackMode::Note ||
+               mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Logic ||
+               mode == Track::TrackMode::Arp ||
+               (target == Target::GateProbabilityBias && mode == Track::TrackMode::Curve);
+
+    case Target::FirstStep:
+    case Target::LastStep:
+    case Target::Divisor:
+        return mode == Track::TrackMode::Note ||
+               mode == Track::TrackMode::Curve ||
+               mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Logic ||
+               mode == Track::TrackMode::Arp;
+    case Target::RunMode:
+        return mode == Track::TrackMode::Note ||
+               mode == Track::TrackMode::Curve ||
+               mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Logic;
+    case Target::Scale:
+    case Target::RootNote:
+        return mode == Track::TrackMode::Note ||
+               mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Logic ||
+               mode == Track::TrackMode::Arp;
+    case Target::CurrentRecordStep:
+        return mode == Track::TrackMode::Note;
+    case Target::Reseed:
+    case Target::SequenceFirstStep:
+    case Target::SequenceLastStep:
+        return mode == Track::TrackMode::Stochastic;
+    case Target::RestProbability2:
+    case Target::RestProbability4:
+    case Target::RestProbability8:
+    case Target::LowOctaveRange:
+    case Target::HighOctaveRange:
+    case Target::LengthModifier:
+        return mode == Track::TrackMode::Stochastic ||
+               mode == Track::TrackMode::Arp;
+
+    default:
+        break;
+    }
+    return false;
+}
 
 bool Routing::isRouted(Target target, int trackIndex) {
     size_t targetIndex = size_t(target);
@@ -348,6 +502,55 @@ static const TargetInfo targetInfos[int(Routing::Target::Last)] = {
     [int(Routing::Target::HighOctaveRange)]                 = {-10,     10,     -1,     1,      1       },
     [int(Routing::Target::LengthModifier)]                  = { -8,     8,      -8,     8,      8       },
 };
+
+float Routing::stabilizeTargetValue(Target target, float normalized, int16_t &lastDiscreteValue, bool &lastBooleanValue, bool &initialized) {
+    normalized = clamp(normalized, 0.f, 1.f);
+
+    if (isBooleanTarget(target)) {
+        constexpr float OnThreshold = 0.55f;
+        constexpr float OffThreshold = 0.45f;
+
+        bool active = initialized ? lastBooleanValue : normalized >= 0.5f;
+        if (active) {
+            active = normalized > OffThreshold;
+        } else {
+            active = normalized >= OnThreshold;
+        }
+
+        lastBooleanValue = active;
+        initialized = true;
+        return active ? 1.f : 0.f;
+    }
+
+    if (!isDiscreteTarget(target)) {
+        return normalized;
+    }
+
+    const auto &info = targetInfos[int(target)];
+    const float step = 1.f / float(info.max - info.min);
+    const float margin = std::min(0.05f, std::max(0.002f, step * 0.25f));
+    const int candidate = std::round(denormalizeTargetValue(target, normalized));
+
+    if (!initialized) {
+        lastDiscreteValue = candidate;
+        initialized = true;
+        return normalizeTargetValue(target, lastDiscreteValue);
+    }
+
+    if (candidate > lastDiscreteValue) {
+        const float boundary = normalizeTargetValue(target, float(lastDiscreteValue) + 0.5f);
+        if (normalized > boundary + margin) {
+            lastDiscreteValue = candidate;
+        }
+    } else if (candidate < lastDiscreteValue) {
+        const float boundary = normalizeTargetValue(target, float(lastDiscreteValue) - 0.5f);
+        if (normalized < boundary - margin) {
+            lastDiscreteValue = candidate;
+        }
+    }
+
+    return normalizeTargetValue(target, lastDiscreteValue);
+}
 
 float Routing::normalizeTargetValue(Routing::Target target, float value) {
     const auto &info = targetInfos[int(target)];

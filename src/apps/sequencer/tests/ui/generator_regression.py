@@ -153,6 +153,7 @@ class GeneratorRegressionTest(tf.UiTest):
         self.assertTrue(self.env.sequencer.isGeneratorPageTop)
         c.press("f2").wait(20)
         self.assertTrue(self.env.sequencer.isGeneratorPageTop)
+        c.press("f5").wait(20)    # NEW RAND arms preview
         c.encoder().wait(20)    # Apply (encoder commit on Random)
         self.assertTrue(self.env.sequencer.isNoteSequenceEditPageTop)
 
@@ -162,6 +163,7 @@ class GeneratorRegressionTest(tf.UiTest):
         self.assertTrue(self.env.sequencer.isGeneratorPageTop)
         c.press("f2").wait(20)
         self.assertTrue(self.env.sequencer.isGeneratorPageTop)
+        c.press("f5").wait(20)    # NEW RAND arms preview
         c.encoder().wait(20)    # Apply (encoder commit on Acid)
         self.assertTrue(self.env.sequencer.isNoteSequenceEditPageTop)
 
@@ -171,6 +173,7 @@ class GeneratorRegressionTest(tf.UiTest):
         self.assertTrue(self.env.sequencer.isGeneratorPageTop)
         c.press("f2").wait(20)
         self.assertTrue(self.env.sequencer.isGeneratorPageTop)
+        c.press("f5").wait(20)    # NEW EUCL arms preview
         c.encoder().wait(20)    # Apply (encoder commit on Euclidean)
         self.assertTrue(self.env.sequencer.isNoteSequenceEditPageTop)
 
@@ -206,12 +209,14 @@ class GeneratorRegressionTest(tf.UiTest):
                 step = sequence.steps[idx]
                 step.gate = False
 
-        # Random: enter on ORIGINAL -> immediate apply is no-op.
+        # Random: enter on ORIGINAL -> immediate apply is blocked until explicit reroll.
         reset_note_baseline()
         before = self._note_signature(sequence, 16)
         self._open_generator_page(0)  # Random
         c.encoder().wait(30)          # Apply without reroll
+        self.assertTrue(self.env.sequencer.isGeneratorPageTop)
         self.assertEqual(self._note_signature(sequence, 16), before)
+        self._trigger_generator_context_action("f4")  # Cancel
 
         # Random: first reroll creates first preview and applies changes.
         reset_note_baseline()
@@ -221,13 +226,15 @@ class GeneratorRegressionTest(tf.UiTest):
         c.encoder().wait(30)          # Apply
         self.assertNotEqual(self._note_signature(sequence, 16), before)
 
-        # Acid: enter on ORIGINAL -> immediate apply is no-op.
+        # Acid: enter on ORIGINAL -> immediate apply is blocked until explicit reroll.
         reset_note_baseline()
         before = self._note_signature(sequence, 16)
         p.selectedNoteSequenceLayer = p.selectedNoteSequence.Layer.Note
         self._open_generator_page(1)  # Acid
         c.encoder().wait(30)          # Apply without reroll
+        self.assertTrue(self.env.sequencer.isGeneratorPageTop)
         self.assertEqual(self._note_signature(sequence, 16), before)
+        self._trigger_generator_context_action("f4")  # Cancel
 
         # Acid: first reroll creates first preview and applies changes.
         reset_note_baseline()
@@ -238,12 +245,14 @@ class GeneratorRegressionTest(tf.UiTest):
         c.encoder().wait(30)          # Apply
         self.assertNotEqual(self._note_signature(sequence, 16), before)
 
-        # Euclidean: enter on ORIGINAL -> immediate apply is no-op.
+        # Euclidean: enter on ORIGINAL -> immediate apply is blocked until explicit reroll.
         reset_gate_baseline()
         before = self._note_signature(sequence, 16)
         self._open_generator_page(3)  # Euclidean
         c.encoder().wait(30)          # Apply without reroll
+        self.assertTrue(self.env.sequencer.isGeneratorPageTop)
         self.assertEqual(self._note_signature(sequence, 16), before)
+        self._trigger_generator_context_action("f4")  # Cancel
 
         # Euclidean: first reroll creates first preview and applies changes.
         reset_gate_baseline()
@@ -775,6 +784,7 @@ class GeneratorRegressionTest(tf.UiTest):
         self.assertTrue(self.env.sequencer.isGeneratorPageTop)
         self.assertTrue(self.env.sequencer.launchpadGeneratorsModeActiveForTest)
 
+        c.right().wait(20)    # Machine encoder reroll arms preview
         c.encoder().wait(30)  # Machine encoder apply
         self.assertTrue(self.env.sequencer.isNoteSequenceEditPageTop)
         self.assertFalse(self.env.sequencer.isGeneratorPageTop)

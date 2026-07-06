@@ -59,7 +59,10 @@
           This page is based on the original Westlicht build guide.
         </p>
         <p>
-          The lower part of this page also includes practical notes for building, launching, and using the local <code>Desktop Simulator</code>, including MIDI and Launchpad setup.
+          This page is about hardware/build concerns, local simulator setup, and controller-template setup. For day-to-day firmware operation, use the <a href="../manual/index.html">User Manual</a>.
+        </p>
+        <p>
+          The lower part of this page includes practical notes for building and launching the local <code>Desktop Simulator</code>, including MIDI and Launchpad connection setup.
         </p>
         <p>
           If you just want the browser-based build, use the published <a href="../testdrive/index.html">Web Simulator</a> instead of the local desktop flow described below.
@@ -196,42 +199,19 @@ make -j
           When <code>--trace-dio</code> is enabled, the terminal prints simulated <code>CLK OUT</code> and <code>RESET OUT</code>
           transitions as they happen, which is useful for checking clock pulse timing independently from the UI rendering.
         </p>
-        <h3>16-step Editing Mode (Experimental): BeatStep Pro + Launch Control XL templates</h3>
+        <h3>External controller templates</h3>
         <p>
-          The firmware includes a dedicated <code>16-step Editing Mode</code> controller path for 16-knob / 16-pad step editing on <code>Note</code> tracks.
-          For BeatStep Pro, import the provided MIDI Control Center template:
+          The firmware includes an experimental <code>16-step Editing Mode</code> controller path for 16-knob / 16-pad hardware.
+          This guide only covers controller setup assets and validation limits; the practical workflow is documented in the
+          <a href="../manual/index.html#appendix-16-step-editing-mode">User Manual - 16-step Editing Mode</a>.
+        </p>
+        <p>
+          For <em>BeatStep Pro</em>, import the MIDI Control Center template:
           <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>.
-          For Launch Control XL, use <code>Factory Preset #1</code>.
+          For <em>Launch Control XL</em>, use <code>Factory Preset #1</code>.
         </p>
         <p>
-          This controller path is experimental. Validation status for <code>Launch Control XL</code> and
-          <code>BeatStep Pro</code> is tracked in
-          <a href="../manual/index.html#manual-validation-scope">User Manual - Known Limits / Validation Scope</a>.
-        </p>
-        <p>
-          This mapping is designed for MIDI channel <code>9</code> and maps:
-          <code>CC 13..20</code> and <code>CC 29..36</code> to step knobs 1..16,
-          <code>Note 41..44</code>, <code>57..60</code>, <code>73..76</code>, and <code>89..92</code> to pad gates 1..16,
-          and <code>CC 106/107</code> (<code>on BSP: Ptn 1 / Ptn 2; on LCXL: Track Select &lt; / &gt;</code>) to prev/next section.
-        </p>
-        <p>
-          Controller compatibility for this path is map-driven (not brand-driven): explicit USB VID/PID support is optional if a controller emits that same MIDI map on channel <code>9</code>. If a device cannot emit this map, it requires a dedicated firmware profile.
-        </p>
-        <p>
-          In firmware, <code>Prev + Next</code> (controller-side, <code>on BSP: Ptn 1 + Ptn 2; on LCXL: Track Select &lt; + &gt;</code>) together toggle <code>16-step Editing Mode</code> armed state. BeatStep Pro template download: <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>. On Launch Control XL, use <code>Factory Preset #1</code>.
-          Armed mode forces loop to the visible 16-step window and enables knob/pad edits; disarming restores the previous loop range.
-        </p>
-        <p>
-          Target scope is the currently selected <code>Note</code> track: knob note editing is active only when the machine layer is <code>Note</code>, while pad gate toggle remains active on that same track across layers.
-        </p>
-        <p>
-          Current LED scope: firmware feedback is gate-focused. Step gate states are reflected on controller pads (and mode/section function buttons have feedback), while note-value edits from knobs have no dedicated LED rendering; knob-row LED behavior remains device-local.
-        </p>
-        <p>
-          Knob note editing works in a range equivalent to two octaves (<code>-1V..+1V</code>) quantized to the current scale; the current root is applied in the output path.
-        </p>
-        <p>
-          Architecture limit: only one external control workflow should be considered active at a time. Launchpad and 16-step Editing Mode are not intended for simultaneous concurrent control in the same session path. BeatStep Pro template download: <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>. On Launch Control XL, use <code>Factory Preset #1</code>.
+          The mapping is designed around MIDI channel <code>9</code>. Controller compatibility is map-driven rather than brand-driven, so other controllers may work if they can emit the same map. Devices that cannot emit that map require a dedicated firmware profile.
         </p>
         <p>
           Architecture limit: the current firmware supports exactly one external USB controller at a time, and that controller must be connected directly to the module USB host port.
@@ -240,7 +220,8 @@ make -j
           USB hubs, including externally powered hubs, are not supported. The current firmware architecture does not implement hub-based multi-device handling on top of the STM32 USB Host stack, so devices connected through a hub are not enumerated by the firmware and cannot establish a usable controller connection.
         </p>
         <p>
-          See also: <a href="../manual/index.html#appendix-16-step-editing-mode">Manual - 16-step Editing Mode</a> and <a href="../manual/index.html#appendix-controller-concurrency-limits">Manual - Controller Concurrency Limits</a>.
+          Validation status for <code>Launch Control XL</code>, <code>BeatStep Pro</code>, simulator USB MIDI, and controller concurrency is tracked in
+          <a href="../manual/index.html#manual-validation-scope">User Manual - Known Limits / Validation Scope</a>.
         </p>
       </section>
 

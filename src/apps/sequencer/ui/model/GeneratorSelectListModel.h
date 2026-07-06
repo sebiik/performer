@@ -55,11 +55,11 @@ public:
     virtual void cell(int row, int column, StringBuilder &str) const override {
         if (column == 0) {
             if (_allowAcid && row == 1) {
-                str("Acid (Layer/Phrase)");
+                str("Acid Layer/Phrase/Eucl");
                 return;
             }
             if (_allowAcid && row == 2) {
-                str("Chaos (Vandalize/Wreck)");
+                str("Chaos Vandalize/Wreck");
                 return;
             }
             if (!_allowAcid && row == 1) {

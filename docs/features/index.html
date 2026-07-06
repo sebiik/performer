@@ -57,6 +57,9 @@
             This page is the curated web summary of the Vinx Scorza line. It reorganizes the work by topic instead of strict release order so it is easier to understand what this branch actually adds.
           </p>
           <p>
+            It is not a replacement for the <a href="../manual/index.html">User Manual</a>: Features explains what exists and how the firmware is shaped; the manual explains how to use it in practice.
+          </p>
+          <p>
             This documentation line is aligned through the active development line. If you want the exact chronological log, including inherited upstream history and older <code>v0.3.2-vinx.*</code> releases, the repository <a href="https://github.com/VinxScorza/performer/blob/master/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG.md</a> remains the technical reference.
           </p>
           <p>
@@ -74,9 +77,9 @@
               The fork started with core sequencing stability work, and this foundation still supports everything built above it.
             </p>
             <ul>
-              <li>Step shifting was stabilized across <code>Note</code>, <code>Logic</code>, <code>Curve</code>, <code>Stochastic</code>, and <code>Arp</code>, including the legacy <code>64-step</code> crash/reboot path and shift operations inside non-zero subranges.</li>
+              <li>Step shifting was stabilized across <code>Note</code>, <code>Logic</code>, <code>Curve</code>, <code>Stochastic</code>, and <code>Arp</code>, including long-sequence and non-zero subrange cases.</li>
               <li>Step selection behavior was refined with more consistent shift handling and a shared selection-or-all fallback used across step-edit and generator paths.</li>
-              <li>Quick Access step-range editing is now bank-aware: in <code>PAGE</code>-hold overlays for <code>First/Last</code> and <code>Seq First/Seq Last</code>, <code>PREV/NEXT</code> moves 16-step banks and <code>S1..S16</code> selects inside the active bank.</li>
+              <li>Quick Access step-range editing is now bank-aware for <code>First/Last</code> and related sequence-window controls.</li>
               <li><code>Curve</code> tracks were extended with per-step <code>Gate Offset</code> and <code>Gate Length</code>, including edit-page support, overview rendering, Launchpad handling, and simulator bindings.</li>
               <li>Note tie editing became chain-aware: tied steps now keep persistent linkage and share note edits as one pitch group (encoder, MIDI note input, and shortcut note input paths), with clearer tie rendering.</li>
               <li>Scale-selection limits were fixed so the full built-in plus user-scale set is reachable again across <code>Project</code>, <code>Note</code>, <code>Logic</code>, <code>Stochastic</code>, and <code>Arp</code>.</li>
@@ -96,11 +99,12 @@
             </p>
             <ul>
               <li><code>Chaos</code> is now framed as an experimental event generator with an explicit preview/apply safety model: a selection-aware multi-layer macro-random engine driven by global <code>Amount</code> and a dedicated target-layers matrix.</li>
-              <li>The workflow expands into <code>CHAOS MODE</code> with <code>Vandalize Sequence</code> (local, sequence-level), <code>Wreck Pattern</code> (pattern-wide, multi-track, more destructive), and non-Note <code>Entropy</code>, all with consistent <code>A/B</code> preview and dedicated popups.</li>
-              <li><code>Chaos</code> preview flow is now stricter and deterministic: target/selection/amount edits no longer auto-reroll, <code>CHAOS</code> press stays the only reroll trigger, and <code>APPLY</code> is blocked while no valid preview exists.</li>
+              <li>The workflow expands into <code>CHAOS MODE</code> with <code>Vandalize Sequence</code> (local, sequence-level), <code>Wreck Pattern</code> (pattern-wide, multi-track, more destructive), and non-Note <code>Entropy</code>, all with consistent <code>A/B</code> preview and explicit apply/cancel behavior.</li>
+              <li><code>Chaos</code> preview flow is now stricter and deterministic: editing targets or intensity does not silently reroll the result, and apply remains guarded until a valid preview exists.</li>
               <li><code>System -&gt; Chaos Defaults</code> now carries separate masks for sequence vandalizing, pattern wrecking, and non-Note entropy unleashed targets.</li>
               <li><code>Pivot</code> and octave-quantized <code>Span</code> controls were added for Chaos register control, replacing the old fixed note-window assumption with a user-steerable mutation window.</li>
-              <li>Performance and memory behavior were tightened through target-step backup only, in-place regeneration, and sequence-scoped storage.</li>
+              <li>Performance and memory behavior were tightened through target-step backup only, in-place regeneration, sequence-scoped storage, and further hardening of <code>Wreck Pattern</code> backup handling to reduce reboot-prone persistent memory pressure.</li>
+              <li><code>Wreck Pattern</code> was streamlined so safety is concentrated in the preview/cancel/apply workflow instead of an extra intermediate warning step.</li>
             </ul>
           </article>
         </div>
@@ -114,10 +118,10 @@
               <code>Acid</code> is one of the clearest Vinx-specific expansions of the generator system: more musical, more structured, and layered.
             </p>
             <ul>
-              <li><code>Acid</code> is now a consolidated Note-track generator with non-destructive preview and a stable <code>Layer/Phrase</code> split.</li>
-              <li><code>Layer</code> mode projects behavior onto a single layer (<code>Gate</code>, <code>Note</code>, or <code>Slide</code>), while <code>Phrase</code> mode writes coordinated <code>Gate + Note + Slide</code> material across the current selection or full pattern.</li>
+              <li><code>Acid</code> is now a consolidated Note-track generator with non-destructive preview and a stable <code>Layer</code> / <code>Phrase</code> / <code>Eucl Phrase</code> split.</li>
+              <li><code>Layer</code> mode projects behavior onto a single layer (<code>Gate</code>, <code>Note</code>, or <code>Slide</code>), while <code>Phrase</code> and <code>Eucl Phrase</code> write coordinated <code>Gate + Note + Slide</code> material; <code>Eucl Phrase</code> adds a Euclidean-shaped rhythmic structure to the acid phrase workflow.</li>
               <li>Parameter behavior was tightened (density, slide behavior, deterministic target counts) to keep outputs more intentional and repeatable.</li>
-              <li>Dedicated visual previews replaced generic generator rendering, and ordering/mapping are aligned across machine pages and Launchpad (<code>Layer → Phrase</code>).</li>
+              <li>Dedicated visual previews replaced generic generator rendering, and ordering/mapping are aligned across machine pages and Launchpad for <code>Layer</code>, <code>Phrase</code>, and <code>Eucl Phrase</code>.</li>
             </ul>
           </article>
         </div>
@@ -150,7 +154,7 @@
             <ul>
               <li>Launchpad remains a core system layer (<code>LP Style</code> / <code>LP Note Style</code>), with defaults aligned to <code>Blue + Circuit</code> while preserving both <code>Classic</code> and <code>Circuit</code> workflows.</li>
               <li>Legacy LP regressions were resolved across note-style rendering, targeting, pattern drawing, fill release, and probability handling.</li>
-              <li>LP <code>Generators Mode</code> is track-aware and interaction-consistent. <code>Note</code> tracks use the full map (<code>Random</code>, <code>Acid Layer</code>, <code>Acid Phrase</code>, <code>Vandalize</code>, <code>Wreck</code>, <code>Euclidean</code>, <code>Init Layer</code>, <code>Init Steps</code>), while <code>Curve</code>/<code>Stochastic</code>/<code>Logic</code>/<code>Arp</code> use the subset (<code>Random</code>, <code>Entropy</code>, <code>Euclidean</code>, <code>Init Layer</code>, <code>Init Steps</code>), with aligned <code>A/B</code>, <code>Apply</code>/<code>Cancel</code>/<code>Reset</code>/<code>Undo</code>, reroll behavior, and improved overlay stability, selector alignment, and generator commit behavior.</li>
+              <li>LP <code>Generators Mode</code> is track-aware and interaction-consistent: Note tracks expose the full generator family, while Curve/Stochastic/Logic/Arp expose the compatible subset, with aligned compare, reset, cancel, apply, and undo behavior.</li>
               <li>Track/scene retarget remains locked during generator selector/pages, track jump to <code>Steps</code> from system pages is supported, and LP input can wake the display.</li>
               <li>Launchpad controller internals were refactored with the P1 structural split (routing, LED drawing, and lock helpers) to reduce coupling and regression risk.</li>
             </ul>
@@ -163,14 +167,13 @@
         <div class="release-stack">
           <article class="release-entry">
             <p class="release-summary">
-              16-step Editing Mode adds a dedicated external-controller workflow for direct per-step note and gate editing on Note tracks. BeatStep Pro template download: <a href="../doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>. On Launch Control XL, use <code>Factory Preset #1</code>.
+              16-step Editing Mode adds a dedicated external-controller workflow for direct per-step note and gate editing on Note tracks.
             </p>
             <ul>
-              <li>The mode provides a dedicated <code>16 knobs + 16 pads + 2 function buttons</code> control path for <code>Launch Control XL</code> and <code>BeatStep Pro</code>: knobs edit step notes and pads toggle step gates on the current visible <code>1..16</code> bank.</li>
-              <li>Compatibility is map-driven: any controller can be used if it transmits the map on MIDI channel <code>9</code> (<code>CC 13..20 + 29..36</code> for knobs, notes <code>41/42/43/44/57/58/59/60/73/74/75/76/89/90/91/92</code> for gate toggles, <code>CC 106/107</code> for <code>Prev/Next</code>, <code>Prev+Next</code> for arm/disarm).</li>
-              <li>Entry/exit is explicit through armed/disarmed state via controller-side <code>Prev + Next</code> together (<code>LCXL: Track Select &lt; + &gt;</code>, <code>BSP: Ptn 1 + Ptn 2</code>): armed mode forces playback/edit focus to the visible 16-step window, restores the previous loop range on disarm, and keeps longer loops practical through bank-by-bank <code>Prev</code>/<code>Next</code> navigation with the same per-step editing semantics.</li>
+              <li>The mode provides a <code>16 knobs + 16 pads</code> control path: knobs edit visible step notes, pads toggle visible step gates, and longer sequences are handled in 16-step banks.</li>
+              <li>Compatibility is map-driven rather than brand-driven; Launch Control XL is the maintainer-validated reference controller, while BeatStep Pro is template-supported and still needs broader hardware validation.</li>
+              <li>Entry/exit is explicit through an armed/disarmed state, so the mode can temporarily focus the current 16-step window and then restore the previous loop range.</li>
               <li>Target scope is the currently selected <code>Note</code> track: knobs are active only when machine layer is <code>Note</code>, while pad gate toggles stay active on that same track across layers.</li>
-              <li>Current maintainer-side hardware validation is on <code>Launch Control XL</code>; <code>BeatStep Pro</code> is code-supported and mapping-ready but still pending broader real-hardware validation, and controller concurrency is intentionally constrained to one active external control workflow at a time.</li>
             </ul>
           </article>
         </div>
@@ -186,7 +189,7 @@
             <ul>
               <li>The default output clock pulse was moved from <code>1ms</code> to <code>10ms</code> for broader module compatibility.</li>
               <li>The Swing UI was rescaled to a more natural <code>0-99%</code> range while preserving original engine timing for backward compatibility.</li>
-              <li>Reset behavior was clarified by separating <code>Reset Gate</code> and introducing <code>Reset Pulse</code> as a distinct external clock mode that reacts only to the rising edge, avoiding implicit start on falling edge.</li>
+              <li>Reset behavior was clarified by separating <code>Reset Gate</code> and <code>Reset Pulse</code> behavior for safer external sync.</li>
               <li>The default <code>Reset CV</code> behavior is now <code>Off</code>, so Note tracks hold their last CV value on stop unless the project explicitly asks otherwise.</li>
               <li>Track-level gate output behavior can now be switched between <code>Gate</code> and <code>Trigger</code> on Note/Curve/Stochastic/Logic/Arp tracks, with global <code>Trigger Length</code> in <code>System -&gt; User Settings</code>; this is per-track behavior, not per-step trigger editing.</li>
             </ul>
@@ -202,14 +205,31 @@
               Beyond individual generators, the Vinx line made generator pages more coherent, safer, and easier to perform with in real time.
             </p>
             <ul>
-              <li>The generator ecosystem across track families (<code>Random</code>, <code>Euclidean</code>, <code>Acid</code> <code>Layer/Phrase</code>, <code>Chaos</code> <code>Vandalize/Wreck/Entropy</code>) now follows a more coherent preview/apply safety model shared between machine pages and Launchpad <code>Generators Mode</code>.</li>
-              <li>All generators now enter on <code>ORIGINAL</code>; first preview is normally created on explicit reroll, with Euclidean direct parameter edits also able to arm preview.</li>
+              <li>The generator ecosystem across track families (<code>Random</code>, <code>Euclidean</code>, <code>Acid</code> <code>Layer/Phrase/Eucl Phrase</code>, <code>Chaos</code> <code>Vandalize/Wreck/Entropy</code>) now follows a more coherent preview/apply safety model shared between machine pages and Launchpad <code>Generators Mode</code>.</li>
+              <li>All generators now enter on <code>ORIGINAL</code>, with a clearer distinction between source material, preview generation, comparison, cancel, and apply.</li>
               <li><code>Generate</code> opens on the current <code>16-step</code> bank and keeps navigation aligned to the active context.</li>
-              <li>The <code>Euclidean</code> generator was reworked with compare behavior, explicit reroll, direct parameter editing, automatic preview arming after <code>Offset</code>/<code>Steps</code>/<code>Beats</code> edits, and a strict <code>Beats ≤ Steps</code> constraint.</li>
+              <li>The <code>Euclidean</code> generator was reworked around compare behavior, intentional pulse-shape editing, and a strict <code>Beats ≤ Steps</code> constraint.</li>
               <li>Footer and context action layouts were rewritten and normalized across generator pages for faster, less error-prone operation in performance use.</li>
               <li><code>ResetGen</code> now restores neutral defaults instead of quietly rerolling generator state.</li>
               <li><code>Init Layer</code>, <code>Init Steps</code>, and <code>Init Seq</code> were separated again with a consistent selection-aware fallback.</li>
               <li>Transport remains responsive inside generator pages so the sequencer stays playable while shaping material.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <h4>Routing &amp; CV Control</h4>
+        <div class="release-stack">
+          <article class="release-entry">
+            <p class="release-summary">
+              Routing remains a performance control layer, but the current line makes it safer and more explicit before adding more targets.
+            </p>
+            <ul>
+              <li>Routing target evaluation now distinguishes continuous, discrete, and boolean/trigger-like destinations, so CV and MIDI modulation are stabilized according to the kind of parameter being controlled.</li>
+              <li>Discrete targets use hysteresis to reduce boundary jitter, while boolean and trigger-like targets use stable threshold behavior instead of flickering around the midpoint.</li>
+              <li>Track-target compatibility is checked before writing routed values, so a route only affects tracks whose current mode actually supports that target.</li>
+              <li>Previously exposed Stochastic bias targets now write the corresponding routed values instead of silently doing nothing.</li>
             </ul>
           </article>
         </div>
@@ -277,6 +297,7 @@
             </p>
             <ul>
               <li>The manual was realigned to current Vinx firmware behavior and kept text-first with technical clarity.</li>
+              <li>A printable black-and-white manual PDF is now generated from the current manual content and available as <a href="../manual/vinx-performer-user-manual.pdf"><code>vinx-performer-user-manual.pdf</code></a>.</li>
               <li>Online manual search/navigation behavior was improved and aligned with the current documentation structure.</li>
               <li>The Launchpad cheatsheet was fully reworked and synchronized with current firmware workflows.</li>
               <li>Simulator documentation pages were refreshed, and the build guide was expanded with simulator, MIDI, Launchpad, and tracing workflows.</li>

@@ -15,7 +15,6 @@
 #include <array>
 #include <bitset>
 #include <cmath>
-#include <vector>
 
 class SequenceBuilder {
 public:
@@ -506,6 +505,7 @@ public:
     enum class ApplyMode : uint8_t {
         Layer,
         Phrase,
+        EuclideanPhrase,
     };
 
     AcidSequenceBuilder(NoteSequence &sequence, NoteSequence::Layer layer, ApplyMode applyMode, std::bitset<CONFIG_STEP_COUNT> &selected) :
@@ -572,7 +572,7 @@ public:
 
         auto &step = _preview.step(stepIndex);
 
-        if (_applyMode == ApplyMode::Phrase) {
+        if (_applyMode == ApplyMode::Phrase || _applyMode == ApplyMode::EuclideanPhrase) {
             step.setGate(value >= 0.5f);
             if (!step.gate()) {
                 step.setSlide(false);
@@ -587,7 +587,7 @@ public:
 
     void clearSteps(const std::bitset<CONFIG_STEP_COUNT> &selected) override {
         if (!selected.any()) {
-            if (_applyMode == ApplyMode::Phrase) {
+            if (_applyMode == ApplyMode::Phrase || _applyMode == ApplyMode::EuclideanPhrase) {
                 for (int i = _preview.firstStep(); i <= _preview.lastStep(); ++i) {
                     auto &step = _preview.step(i);
                     step.clear();
@@ -609,7 +609,7 @@ public:
 
             auto &step = _preview.step(i);
             step.clear();
-            if (_applyMode == ApplyMode::Phrase) {
+            if (_applyMode == ApplyMode::Phrase || _applyMode == ApplyMode::EuclideanPhrase) {
                 step.setGate(false);
                 step.setSlide(false);
             }
@@ -621,7 +621,7 @@ public:
     }
 
     void clearLayer(const std::bitset<CONFIG_STEP_COUNT> &selected) override {
-        if (_applyMode == ApplyMode::Phrase) {
+        if (_applyMode == ApplyMode::Phrase || _applyMode == ApplyMode::EuclideanPhrase) {
             for (int i = 0; i < int(_preview.steps().size()); ++i) {
                 if (selected.any() ? selected[i] : isTargetStep(i)) {
                     auto &step = _preview.step(i);
@@ -687,7 +687,7 @@ public:
             return clamp(int(std::round((step.note() - range.min) * 255.f / float(range.max - range.min))), 0, 255);
         };
 
-        if (_applyMode == ApplyMode::Phrase) {
+        if (_applyMode == ApplyMode::Phrase || _applyMode == ApplyMode::EuclideanPhrase) {
             return noteValue();
         }
 
@@ -722,11 +722,16 @@ public:
 
     ChaosSequenceBuilder(Project &project, std::bitset<CONFIG_STEP_COUNT> &selected, Scope scope) :
         _project(project),
+        _tracks(trackBackupStorage()),
         _selected(selected),
         _selectedTrackIndex(project.selectedTrackIndex()),
         _patternIndex(project.selectedPatternIndex()),
         _scope(scope)
     {
+        for (auto &backup : _tracks) {
+            backup.clear();
+        }
+
         int slot = 0;
         for (int trackIndex = 0; trackIndex < CONFIG_TRACK_COUNT; ++trackIndex) {
             const auto &track = _project.track(trackIndex);
@@ -843,7 +848,8 @@ public:
             }
 
             auto &backup = _tracks[trackSlot];
-            for (uint8_t stepIndex : backup.targetSteps) {
+            for (int i = 0; i < backup.targetStepCount; ++i) {
+                const uint8_t stepIndex = backup.targetSteps[i];
                 if (!selected.any() || selected[stepIndex]) {
                     auto &sequence = _project.noteSequence(_trackIndices[trackSlot], _patternIndex);
                     sequence.step(stepIndex).clear();
@@ -883,7 +889,8 @@ public:
             return false;
         }
         const auto &targetSteps = _tracks[_selectedTrackSlot].targetSteps;
-        return std::find(targetSteps.begin(), targetSteps.end(), uint8_t(stepIndex)) != targetSteps.end();
+        const auto targetStepCount = _tracks[_selectedTrackSlot].targetStepCount;
+        return std::find(targetSteps.begin(), targetSteps.begin() + targetStepCount, uint8_t(stepIndex)) != targetSteps.begin() + targetStepCount;
     }
 
     int noteTrackCount() const { return _trackCount; }
@@ -892,7 +899,7 @@ public:
         return _scope == Scope::Pattern || trackSlot == _selectedTrackSlot;
     }
 
-    int targetStepCount(int trackSlot) const { return int(_tracks[trackSlot].targetSteps.size()); }
+    int targetStepCount(int trackSlot) const { return int(_tracks[trackSlot].targetStepCount); }
     const NoteSequence::Step &originalStep(int trackSlot, int targetIndex) const {
         return _tracks[trackSlot].originalSteps[targetIndex];
     }
@@ -908,22 +915,35 @@ private:
                 return;
             }
 
-            if (std::find(targetSteps.begin(), targetSteps.end(), uint8_t(stepIndex)) != targetSteps.end()) {
+            if (targetStepCount >= CONFIG_STEP_COUNT) {
                 return;
             }
 
-            targetSteps.push_back(uint8_t(stepIndex));
-            originalSteps.push_back(step);
+            const auto target = uint8_t(stepIndex);
+            for (int i = 0; i < targetStepCount; ++i) {
+                if (targetSteps[i] == target) {
+                    return;
+                }
+            }
+
+            targetSteps[targetStepCount] = target;
+            originalSteps[targetStepCount] = step;
+            ++targetStepCount;
         }
 
-        std::vector<uint8_t> targetSteps;
-        std::vector<NoteSequence::Step> originalSteps;
+        void clear() {
+            targetStepCount = 0;
+        }
+
+        std::array<uint8_t, CONFIG_STEP_COUNT> targetSteps = {};
+        std::array<NoteSequence::Step, CONFIG_STEP_COUNT> originalSteps = {};
+        uint8_t targetStepCount = 0;
     };
 
     void restoreOriginalSteps(int trackSlot) {
         auto &sequence = _project.noteSequence(_trackIndices[trackSlot], _patternIndex);
         const auto &backup = _tracks[trackSlot];
-        for (size_t i = 0; i < backup.targetSteps.size(); ++i) {
+        for (int i = 0; i < backup.targetStepCount; ++i) {
             sequence.step(backup.targetSteps[i]) = backup.originalSteps[i];
         }
     }
@@ -931,14 +951,20 @@ private:
     void captureCurrentSteps(int trackSlot) {
         auto &sequence = _project.noteSequence(_trackIndices[trackSlot], _patternIndex);
         auto &backup = _tracks[trackSlot];
-        for (size_t i = 0; i < backup.targetSteps.size(); ++i) {
+        for (int i = 0; i < backup.targetStepCount; ++i) {
             backup.originalSteps[i] = sequence.step(backup.targetSteps[i]);
         }
     }
 
+    typedef std::array<TrackBackup, CONFIG_TRACK_COUNT> TrackBackupStorage;
+    static TrackBackupStorage &trackBackupStorage() {
+        static TrackBackupStorage storage;
+        return storage;
+    }
+
     Project &_project;
     std::array<int, CONFIG_TRACK_COUNT> _trackIndices = {};
-    std::array<TrackBackup, CONFIG_TRACK_COUNT> _tracks = {};
+    TrackBackupStorage &_tracks;
     std::bitset<CONFIG_STEP_COUNT> &_selected;
     int _selectedTrackIndex = 0;
     int _patternIndex = 0;

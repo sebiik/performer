@@ -66,7 +66,7 @@ void QuickEditPage::draw(Canvas &canvas) {
         const int labelWidth = canvas.textWidth(str);
         const int labelX = x0 + (w - labelWidth) / 2;
         canvas.setColor(Color::None);
-        canvas.fillRect(labelX - 1, Height - FooterHeight + 1, labelWidth + 2, FooterHeight - 1);
+        canvas.fillRect(x0 + 1, Height - FooterHeight + 1, w - 2, FooterHeight - 1);
         canvas.setColor(Color::Bright);
         canvas.drawText(labelX, Height - 3, str);
         return;

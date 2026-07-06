@@ -18,6 +18,18 @@ void StochasticTrack::writeRouted(Routing::Target target, int intValue, float fl
     case Routing::Target::Rotate:
         setRotate(intValue, true);
         break;
+    case Routing::Target::GateProbabilityBias:
+        setGateProbabilityBias(intValue, true);
+        break;
+    case Routing::Target::RetriggerProbabilityBias:
+        setRetriggerProbabilityBias(intValue, true);
+        break;
+    case Routing::Target::LengthBias:
+        setLengthBias(intValue, true);
+        break;
+    case Routing::Target::NoteProbabilityBias:
+        setNoteProbabilityBias(intValue, true);
+        break;
     default:
         break;
     }

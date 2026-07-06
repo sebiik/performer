@@ -41,7 +41,7 @@ public:
     bool contextActionEnabled(int index) const;
     void init();
     void revert();
-    void commit();
+    bool commit();
     void togglePreview();
     void invalidateChaosPreview(bool fromEdit = false);
     void triggerChaosPreview();

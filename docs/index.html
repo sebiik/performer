@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vinx PER|FORMER Firmware | Westlicht Eurorack Sequencer Fork</title>
-  <meta name="description" content="Download the Vinx Scorza PER|FORMER firmware, read the manual, launch the web simulator, and follow Launchpad-focused updates for the Westlicht eurorack sequencer.">
+  <meta name="description" content="Download the Vinx Scorza PER|FORMER firmware, read the manual or printable PDF, launch the web simulator, and follow Launchpad-focused updates for the Westlicht eurorack sequencer.">
   <link rel="canonical" href="https://vinxscorza.github.io/performer/">
   <meta name="theme-color" content="#252525">
   <meta name="robots" content="index,follow">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Vinx PER|FORMER">
   <meta property="og:title" content="Vinx PER|FORMER Firmware | Westlicht Eurorack Sequencer Fork">
-  <meta property="og:description" content="Download the Vinx Scorza PER|FORMER firmware, read the manual, launch the web simulator, and follow Launchpad-focused updates for the Westlicht eurorack sequencer.">
+  <meta property="og:description" content="Download the Vinx Scorza PER|FORMER firmware, read the manual or printable PDF, launch the web simulator, and follow Launchpad-focused updates for the Westlicht eurorack sequencer.">
   <meta property="og:url" content="https://vinxscorza.github.io/performer/">
   <meta property="og:image" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
   <meta property="og:image:secure_url" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
@@ -21,7 +21,7 @@
   <meta property="og:image:alt" content="Vinx PER|FORMER firmware social preview">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Vinx PER|FORMER Firmware | Westlicht Eurorack Sequencer Fork">
-  <meta name="twitter:description" content="Download the Vinx Scorza PER|FORMER firmware, read the manual, launch the web simulator, and follow Launchpad-focused updates for the Westlicht eurorack sequencer.">
+  <meta name="twitter:description" content="Download the Vinx Scorza PER|FORMER firmware, read the manual or printable PDF, launch the web simulator, and follow Launchpad-focused updates for the Westlicht eurorack sequencer.">
   <meta name="twitter:image" content="https://vinxscorza.github.io/performer/assets/vinx-performer-social.png">
   <meta name="twitter:image:alt" content="Vinx PER|FORMER firmware social preview">
   <link rel="stylesheet" href="style.css">
@@ -58,7 +58,7 @@
           </a>
           <a class="home-cta-link" href="manual/index.html">
             <span class="home-cta-title">User Manual</span>
-            <span class="home-cta-meta">Complete workflow and reference</span>
+            <span class="home-cta-meta">Complete workflow, reference, and printable PDF</span>
           </a>
           <a class="home-cta-link" href="https://github.com/VinxScorza/performer/releases" target="_blank" rel="noopener noreferrer">
             <span class="home-cta-title">Release Notes</span>
@@ -76,7 +76,7 @@
         <div class="download-grid">
           <div class="download-primary">
             <p class="download-label">Current firmware</p>
-            <p class="download-version">Vinx FW v0.4.4</p>
+            <p class="download-version">Vinx FW v0.4.5</p>
             <p>
               Download the latest <strong>UPDATE.DAT</strong> from
               <a href="https://github.com/VinxScorza/performer/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>,
@@ -86,6 +86,8 @@
               <a href="https://github.com/VinxScorza/performer/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>
               <span aria-hidden="true">|</span>
               <a href="manual/index.html#appendix-firmware-update">Firmware update manual</a>
+              <span aria-hidden="true">|</span>
+              <a href="manual/vinx-performer-user-manual.pdf">Manual PDF</a>
             </p>
           </div>
           <dl class="download-facts">
@@ -95,15 +97,15 @@
             </div>
             <div>
               <dt>Size</dt>
-              <dd><code>739,880 bytes</code></dd>
+              <dd><code>740,692 bytes</code></dd>
             </div>
             <div>
               <dt>MD5</dt>
-              <dd><code>cdece633a139d4cc686164222595fc57</code></dd>
+              <dd><code>965933b5dee316ae5680891007046bf4</code></dd>
             </div>
             <div>
               <dt>SHA-256</dt>
-              <dd><code>dd2bd0892d4e2077b543262dd5f42cf7e0d7a15469e10c5830940adb3d327043</code></dd>
+              <dd><code>aed77ef663923de8f57dd36c5c85b2b341b48a8f07986b058f85702c64e65985</code></dd>
             </div>
           </dl>
         </div>
@@ -141,39 +143,31 @@
         </p>
         <h4 class="section-callout">Generators &amp; Performance Workflow</h4>
         <ul>
-          <li>Full evolution of the generator ecosystem (<code>Random</code>, <code>Acid</code>, <code>Euclidean</code>, <code>Chaos</code>), now unified under a coherent preview/apply safety model and consistent playable workflow across machine and Launchpad. Includes the introduction and consolidation of <code>Acid</code> (<code>Layer</code> + <code>Phrase</code>), the expansion of <code>Chaos</code> into <code>Vandalize Sequence</code> + <code>Wreck Pattern</code>, and the addition of <code>Entropy</code> as a dedicated subset for non-Note tracks.</li>
-          <li>Generator interaction is now more explicit and uniform: all generator pages enter on <code>ORIGINAL</code>, first preview requires explicit reroll, and footer/context action layouts were rewritten for a more consistent workflow.</li>
-          <li><code>Chaos</code>/<code>Entropy</code> now follows strict explicit reroll flow (no implicit auto-reroll on target/selection/amount edits), with in-page <code>Pivot</code>/<code>Span</code> controls for register steering.</li>
-          <li>Unified Init semantics across <code>Init Layer</code> / <code>Init Steps</code> / <code>Init Seq</code>, with consistent selection-aware fallback.</li>
-          <li>Launchpad <code>Generators Mode</code> integrated with track-type mapping, including immediate <code>Init Layer</code> and <code>Init Steps</code> actions.</li>
-          <li>Launchpad UX improvements including <code>1-level Undo/Redo</code>, <code>Circuit</code> as default with improved <code>Classic</code> compatibility, improved targeting/probability/range handling, display wake on input, and a near-complete refactoring of the Launchpad controller codebase.</li>
+          <li><code>Random</code>, <code>Euclidean</code>, <code>Acid</code>, and <code>Chaos</code> now form a broader generator ecosystem built around preview/apply safety, <code>A/B</code> comparison, and live-performance use.</li>
+          <li><code>Acid</code> includes <code>Layer</code>, <code>Phrase</code>, and <code>Eucl Phrase</code>; <code>Chaos</code> expands into <code>Vandalize</code>, <code>Wreck</code>, and non-Note <code>Entropy</code>.</li>
+          <li>Launchpad Generators Mode, Init actions, Undo/Redo, and safer cancel/apply behavior make the generator workflow playable from both the module and external controllers.</li>
         </ul>
         <h4 class="section-callout">Step Editing, Timing &amp; Sequencing</h4>
         <ul>
-          <li>Experimental <code>16-step Editing Mode</code> for <code>Launch Control XL</code> / <code>BeatStep Pro</code>: direct per-step workflow with <code>16 knobs + 16 pads</code>, explicit arm/disarm entry, forced visible 16-step loop while armed, bank navigation, and loop restore on exit. BeatStep Pro template: <a href="doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>; on Launch Control XL use <code>Factory Preset #1</code>. Compatibility is map-driven: any controller can work if it sends the expected MIDI map on channel <code>9</code>.</li>
-          <li><code>Curve</code> track extended with <code>Gate Offset</code> and <code>Gate Length</code> layers.</li>
-          <li>Unified step selection system (shift behavior and fallback selection-or-all centralized).</li>
-          <li>Quick Access range editing is now bank-aware for step windows: in <code>PAGE</code>-hold overlays, <code>PREV/NEXT</code> moves 16-step banks and <code>S1..S16</code> selects inside the active bank.</li>
-          <li>Note tie editing is now chain-aware: tied notes behave as one editable pitch group, with clearer tie rendering on step view.</li>
-          <li>Refined clock and sync handling (<code>Reset Pulse</code> and edge-safe behavior).</li>
-          <li>Track-level gate output shaping is now available via <code>Gate Out Mode</code> (<code>Gate</code>/<code>Trigger</code>) with global trigger-length control in System settings.</li>
-          <li>Improved scale capture consistency and operational limits, including octave-preserving Project-scale remap behavior on the Note-track <code>Scale = Default</code> path.</li>
+          <li>External <code>16-step Editing Mode</code> adds direct note/gate editing for Note tracks with 16-knob + 16-pad controllers.</li>
+          <li>Core sequencing gained bank-aware range editing, chain-aware note ties, improved step selection, <code>Curve</code> gate timing layers, and per-track <code>Gate/Trigger</code> output behavior.</li>
+          <li>Clock/reset behavior, scale handling, Voltage Mode paths, and Arp/Stochastic scale-safe transpose were tightened for more predictable performance use.</li>
         </ul>
         <h4 class="section-callout">Memory, Runtime &amp; Build Robustness</h4>
         <ul>
-          <li>Reduced memory footprint and improved runtime efficiency (removal of accidental <code>iostream/locale</code> pull-in on STM32, better SRAM/CCRAM usage vs Mebitek <code>0.3.2</code> baseline).</li>
-          <li>Build and simulator hardening (deterministic STM32 toolchain, <code>&lt;algorithm&gt;</code> fix on <code>ClockTimer</code>, cleanup of simulator warnings and includes).</li>
+          <li>Reduced STM32 memory pressure and improved runtime efficiency, with additional hardening around the heaviest generator paths.</li>
+          <li>Build and simulator paths were cleaned up and aligned with current firmware behavior.</li>
         </ul>
         <h4 class="section-callout">Core Engine &amp; Safety</h4>
         <ul>
-          <li>Robustness improvements across modal paths, input redispatch, and selector handling (no key leaks, proper isolation, stable closing behavior), with end-to-end locking during generator flows across machine and Launchpad.</li>
-          <li>Generator safety guard-rails and overall UX stabilization (safe entry paths, retarget locking, consistent interaction model), supported by targeted regression tests on simulator/UI (selector lock, footer behavior, cancel leaks, non-Note mapping).</li>
-          <li>Project file-operation hardening now serializes <code>Load</code>/<code>Save</code>/<code>Save As</code> task flow and delivers results on UI thread; SD boot path is also hardened for slower cards without relaxing runtime watchdog strictness. This is a strong partial hardening, not yet full architectural closure.</li>
+          <li>Generator and modal UI paths were hardened against wrong-target apply/cancel behavior, stale state, and controller retargeting edge cases.</li>
+          <li>Routing/CV control now treats continuous, discrete, and trigger-like targets more safely and filters writes by compatible track mode.</li>
+          <li><code>Load</code>, <code>Save</code>, <code>Save As</code>, project browsing, and slower SD-card boot paths were hardened to reduce race and reboot-prone behavior.</li>
         </ul>
         <h4 class="section-callout">Docs, Site &amp; Ecosystem</h4>
         <ul>
-          <li>Documentation, cheatsheet, and simulator are fully aligned with current firmware behavior, with improved online manual search/navigation and expanded coverage of generator semantics, Launchpad sub-views, 16-step Editing Mode (BeatStep Pro template download: <a href="doc/PERFORMERstep16_BSP.beatsteppro" target="_blank" rel="noopener noreferrer"><code>PERFORMERstep16_BSP.beatsteppro</code></a>; on Launch Control XL use <code>Factory Preset #1</code>), Entropy targeting, and step visualization.</li>
-          <li>Website and feature archive were updated to reflect Vinx firmware evolution and keep the ecosystem coherent across site, manual, simulator tooling, Launchpad reference, and fork map.</li>
+          <li>The site now separates roles clearly: Home for overview, Features for the curated feature map, User Manual for practical use, Build Guide for hardware/build/simulator setup, and Cheatsheet for Launchpad reference.</li>
+          <li>The online manual includes search/navigation and a printable <a href="manual/vinx-performer-user-manual.pdf">manual PDF</a>.</li>
         </ul>
         <p>
           And much more across the wider Vinx line.<br>

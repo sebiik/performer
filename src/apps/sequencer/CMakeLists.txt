@@ -124,7 +124,6 @@ set(sources
     ui/pages/TopPage.cpp
     ui/pages/TrackPage.cpp
     ui/pages/UserScalePage.cpp
-    ui/pages/WreckPatternWarningPage.cpp
     # ui/painters
     ui/painters/SequencePainter.cpp
     ui/painters/SongPainter.cpp

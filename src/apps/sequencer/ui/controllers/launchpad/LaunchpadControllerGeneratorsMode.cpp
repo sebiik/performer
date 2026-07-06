@@ -110,8 +110,7 @@ bool LaunchpadController::generatorTrackSelectionLocked() const {
     return top == &pages->contextMenu ||
            top == &pages->generatorSelect ||
            top == &pages->acidModeSelect ||
-           top == &pages->chaosScopeSelect ||
-           top == &pages->wreckPatternWarning;
+           top == &pages->chaosScopeSelect;
 }
 
 bool LaunchpadController::handleGeneratorModeGlobalButtons(const Button &button, ButtonAction action) {
@@ -128,8 +127,9 @@ bool LaunchpadController::handleGeneratorModeGlobalButtons(const Button &button,
         if (action == ButtonAction::Up) {
             if (_generatorApplyArmed && !_generatorApplyCanceled && generatorModePreviewPage()) {
                 if (auto *pages = _manager.pages()) {
-                    pages->generator.commit();
-                    setGeneratorMode(false);
+                    if (pages->generator.commit()) {
+                        setGeneratorMode(false);
+                    }
                 }
             }
             _generatorApplyArmed = false;
@@ -216,6 +216,8 @@ LaunchpadController::LaunchpadGenerator LaunchpadController::generatorModeGrid(i
             return LaunchpadGenerator::Random;
         case 1:
             return LaunchpadGenerator::AcidLayer;
+        case 8:
+            return LaunchpadGenerator::AcidEuclideanPhrase;
         case 9:
             return LaunchpadGenerator::AcidPhrase;
         case 2:
@@ -271,6 +273,7 @@ void LaunchpadController::setGeneratorMode(bool active) {
                 case LaunchpadGenerator::Random:
                 case LaunchpadGenerator::AcidPhrase:
                 case LaunchpadGenerator::AcidLayer:
+                case LaunchpadGenerator::AcidEuclideanPhrase:
                 case LaunchpadGenerator::Vandalize:
                 case LaunchpadGenerator::Wreck:
                 case LaunchpadGenerator::Euclidean:
@@ -338,6 +341,7 @@ void LaunchpadController::sequenceDrawGeneratorMode() {
     const GeneratorSlot noteSlots[] = {
         {0, 0, LaunchpadGenerator::Random},
         {0, 1, LaunchpadGenerator::AcidLayer},
+        {1, 0, LaunchpadGenerator::AcidEuclideanPhrase},
         {1, 1, LaunchpadGenerator::AcidPhrase},
         {0, 2, LaunchpadGenerator::Vandalize},
         {1, 2, LaunchpadGenerator::Wreck},
@@ -578,6 +582,9 @@ void LaunchpadController::sequenceOpenGenerator(LaunchpadGenerator generator) {
             break;
         case LaunchpadGenerator::AcidLayer:
             pages->noteSequenceEdit.openLaunchpadGenerator(NoteSequenceEditPage::LaunchpadGenerator::AcidLayer);
+            break;
+        case LaunchpadGenerator::AcidEuclideanPhrase:
+            pages->noteSequenceEdit.openLaunchpadGenerator(NoteSequenceEditPage::LaunchpadGenerator::AcidEuclideanPhrase);
             break;
         case LaunchpadGenerator::Vandalize:
             pages->noteSequenceEdit.openLaunchpadGenerator(NoteSequenceEditPage::LaunchpadGenerator::Vandalize);

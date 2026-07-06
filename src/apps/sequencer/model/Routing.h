@@ -223,6 +223,14 @@ public:
         return isPlayStateTarget(target) || isTrackTarget(target) || isSequenceTarget(target);
     }
 
+    static bool isBooleanTarget(Target target);
+    static bool isContinuousTarget(Target target);
+    static bool isDiscreteTarget(Target target) {
+        return target != Target::None && !isBooleanTarget(target) && !isContinuousTarget(target);
+    }
+    static bool targetSupportedByTrackMode(Target target, uint8_t trackMode);
+    static float stabilizeTargetValue(Target target, float normalized, int16_t &lastDiscreteValue, bool &lastBooleanValue, bool &initialized);
+
     enum class Source : uint8_t {
         None,
         CvIn1,
@@ -574,6 +582,7 @@ public:
     int findEmptyRoute() const;
     int findRoute(Target target, int trackIndex) const;
     int checkRouteConflict(const Route &editedRoute, const Route &existingRoute) const;
+    uint8_t supportedTracks(Target target, uint8_t tracks) const;
 
     void writeTarget(Target target, uint8_t tracks, float normalized);
 

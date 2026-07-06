@@ -340,7 +340,7 @@ void NoteSequenceEditPage::draw(Canvas &canvas) {
 void NoteSequenceEditPage::drawLaunchpadGeneratorOverlay(Canvas &canvas) {
     static const char * const overlayCells[2][6] = {
         { "RAND", "ACIDL", "VNDLZ", "EUCL", nullptr, "INITL" },
-        { nullptr, "ACIDP", "WRECK", nullptr, nullptr, "INITS" },
+        { "ACIDEU", "ACIDP", "WRECK", nullptr, nullptr, "INITS" },
     };
 
     constexpr int columns = 6;
@@ -1314,6 +1314,9 @@ void NoteSequenceEditPage::openLaunchpadGenerator(LaunchpadGenerator generator) 
     case LaunchpadGenerator::AcidPhrase:
         showAcidGenerator(AcidSequenceBuilder::ApplyMode::Phrase);
         break;
+    case LaunchpadGenerator::AcidEuclideanPhrase:
+        showAcidGenerator(AcidSequenceBuilder::ApplyMode::EuclideanPhrase);
+        break;
     case LaunchpadGenerator::AcidLayer:
         // Keep LP behavior aligned with machine Acid selector semantics:
         // Layer mode is valid only on Gate/Note/Slide, otherwise fall back to Phrase.
@@ -1396,18 +1399,7 @@ void NoteSequenceEditPage::showChaosGenerator() {
         }
 
         if (scope == ChaosGenerator::Scope::Pattern) {
-            _manager.pages().wreckPatternWarning.show([this] (WreckPatternWarningPage::Action action) {
-                switch (action) {
-                case WreckPatternWarningPage::Action::Save:
-                    showProjectSavePage();
-                    break;
-                case WreckPatternWarningPage::Action::Wreck:
-                    showChaosGenerator(ChaosGenerator::Scope::Pattern);
-                    break;
-                case WreckPatternWarningPage::Action::Cancel:
-                    break;
-                }
-            });
+            showChaosGenerator(ChaosGenerator::Scope::Pattern);
             return;
         }
 

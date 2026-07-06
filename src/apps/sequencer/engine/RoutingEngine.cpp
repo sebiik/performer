@@ -3,6 +3,8 @@
 #include "Engine.h"
 #include "MidiUtils.h"
 
+#include <cmath>
+
 // for allowing direct mapping
 static_assert(int(MidiPort::Midi) == int(Types::MidiPort::Midi), "invalid mapping");
 static_assert(int(MidiPort::UsbMidi) == int(Types::MidiPort::UsbMidi), "invalid mapping");
@@ -10,7 +12,9 @@ static_assert(int(MidiPort::UsbMidi) == int(Types::MidiPort::UsbMidi), "invalid 
 RoutingEngine::RoutingEngine(Engine &engine, Model &model) :
     _engine(engine),
     _routing(model.project().routing())
-{}
+{
+    _sourceValues.fill(0.f);
+}
 
 void RoutingEngine::update() {
     updateSources();
@@ -122,6 +126,7 @@ void RoutingEngine::updateSources() {
             case Routing::Source::Last:
                 break;
             }
+            sourceValue = clamp(sourceValue, 0.f, 1.f);
         }
     }
 }
@@ -130,12 +135,16 @@ void RoutingEngine::updateSinks() {
     for (int routeIndex = 0; routeIndex < CONFIG_ROUTE_COUNT; ++routeIndex) {
         const auto &route = _routing.route(routeIndex);
         auto &routeState = _routeStates[routeIndex];
+        auto target = route.target();
+        uint8_t tracks = Routing::isPerTrackTarget(target) ? _routing.supportedTracks(target, route.tracks()) : route.tracks();
 
-        bool routeChanged = route.target() != routeState.target || route.tracks() != routeState.tracks;
+        bool routeChanged = target != routeState.target || tracks != routeState.tracks;
 
         if (routeChanged) {
             // disable previous routing
             Routing::setRouted(routeState.target, routeState.tracks, false);
+            routeState.stabilizerInitialized = false;
+            routeState.valueInitialized = false;
             // reset last state for play/record toggle
             if (routeState.target == Routing::Target::PlayToggle) {
                 _lastPlayToggleActive = false;
@@ -146,21 +155,27 @@ void RoutingEngine::updateSinks() {
         }
 
         if (route.active()) {
-            auto target = route.target();
             float value = route.min() + _sourceValues[routeIndex] * (route.max() - route.min());
-            if (Routing::isEngineTarget(target)) {
-                writeEngineTarget(target, value);
-            } else {
-                _routing.writeTarget(target, route.tracks(), value);
+            value = Routing::stabilizeTargetValue(target, value, routeState.discreteValue, routeState.booleanValue, routeState.stabilizerInitialized);
+
+            const bool valueChanged = !routeState.valueInitialized || std::fabs(value - routeState.value) > 0.000001f;
+            if (routeChanged || valueChanged) {
+                if (Routing::isEngineTarget(target)) {
+                    writeEngineTarget(target, value);
+                } else if (!Routing::isPerTrackTarget(target) || tracks != 0) {
+                    _routing.writeTarget(target, tracks, value);
+                }
+                routeState.value = value;
+                routeState.valueInitialized = true;
             }
         }
 
         if (routeChanged) {
             // enable new routing
-            Routing::setRouted(route.target(), route.tracks(), true);
+            Routing::setRouted(target, tracks, true);
             // save state
-            routeState.target = route.target();
-            routeState.tracks = route.tracks();
+            routeState.target = target;
+            routeState.tracks = tracks;
         }
     }
 }
