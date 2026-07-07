@@ -4,39 +4,26 @@
 
 ## <a href="CHANGELOG.md" target="_blank" rel="noopener noreferrer">Click for CHANGELOG</a> · <a href="https://vinxscorza.github.io/performer/features/" target="_blank" rel="noopener noreferrer">Click for FEATURES</a>
 
+PER|FORMER is a eurorack sequencer module designed for both live performance and work in the studio.
+This firmware is a personal fork of the <a href="https://github.com/mebitek/performer" target="_blank" rel="noopener noreferrer">Mebitek fork</a> of the <a href="https://github.com/westlicht/performer" target="_blank" rel="noopener noreferrer">original Westlicht PER|FORMER firmware</a>, shaped by real performance use, custom behavior, and focused interaction and UI changes.
+
+Website, downloads, manual, web simulator, Launchpad cheatsheet, feature overview, and donation page:
+<a href="https://vinxscorza.github.io/performer/" target="_blank" rel="noopener noreferrer">https://vinxscorza.github.io/performer/</a>
+
 ## Major Features
 
-- `Core Sequencing`: Stabilized step engines across `Note`/`Logic`/`Curve`/`Stochastic`/`Arp`, including legacy crash paths, non-zero subrange shifting, refined step selection behavior (shift handling and selection-or-all fallback logic), Curve `Gate Offset`/`Gate Length`, quick-access 16-step bank paging for First/Last step ranges, tie-chain aware Note editing, and octave-preserving Project-scale remap behavior on Note tracks using `Scale = Default`.
-- `Chaos generators`: `Chaos` evolved into `Vandalize Sequence` + `Wreck Pattern` with explicit `A/B` safety flow, selection-aware targeting, machine-level defaults with separate masks, explicit reroll-only generation, and in-page `Pivot`/`Span` register controls.
-- `Acid generators`: `Acid` now includes `Layer`, `Phrase`, and `Eucl Phrase`; `Eucl Phrase` writes coordinated `Gate + Note + Slide` acid material with a Euclidean-shaped gate structure from `Offset`/`Steps`/`Beats`, available from both machine UI and Launchpad Generators Mode.
-- `Random generator`: `Random` now runs as a stable preview/apply workflow with full `32-bit` seed handling and richer preview rendering.
-- `Launchpad`: Launchpad is treated as a first-class layer (`LP Style` / `LP Note Style`), defaults to `Blue + Circuit`, supports `Classic` and `Circuit`, includes many regression fixes, and adds split `Generators Mode` (`Note` full map including `Acid Eucl Phrase`, `Init Layer`, and `Init Steps`; `Curve`/`Stochastic`/`Logic`/`Arp` subset with `Entropy`, `Init Layer`, and `Init Steps`), plus `1-level Undo/Redo`, lock policies, overlay stability, and a near-complete refactoring of the Launchpad controller codebase.
-- `16-step Editing Mode`: Experimental external controller workflow for `Launch Control XL` and `BeatStep Pro`, using `16 knobs + 16 pads + 2 function buttons`. Target is the currently selected `Note` track: knobs edit `Note` only when machine layer is `Note`, while pads toggle `Gate` on the same track across layers. `BeatStep Pro` remains code-supported but still requires broader on-hardware validation; maintainer-side hardware tests so far are on `Launch Control XL` only. BeatStep Pro template download: [`PERFORMERstep16_BSP.beatsteppro`](docs/doc/PERFORMERstep16_BSP.beatsteppro). On Launch Control XL, use `Factory Preset #1`. This mode is map-driven (not brand-driven): any controller can work if it sends the expected map on MIDI channel `9` (`CC 13..20` + `29..36` for knobs, notes `41/42/43/44/57/58/59/60/73/74/75/76/89/90/91/92` for gate toggles, `CC 106/107` for `Prev/Next`, `Prev+Next` for arm/disarm).
-- `Clock & Sync`: External clock behavior was hardened for real hardware (`Reset Gate`, `Reset Pulse`, rising-edge-only pulse handling, `Reset CV` default `Off`) while keeping backward-compatible timing behavior. 
-- `Gate/Trigger outputs`: Track-level `Gate Out Mode` (`Gate`/`Trigger`) is available on `Note`/`Curve`/`Stochastic`/`Logic`/`Arp`, with global `Trigger Length` in `System -> User Settings`; this is per-track output behavior, not per-step trigger editing.
-- `Generator UX`: Generator families were reorganized with stronger page semantics: open on current bank, playable transport, intentional `ResetGen`, explicit `Init Layer`/`Init Steps`/`Init Seq` split, safer commit/cancel flow, all generators entering on `ORIGINAL` with explicit first reroll, and more uniform footer/context layouts.
-- `UI & Display`: Generator and step visuals were redesigned for readability (full `64-step` context + active `16-step` bank + playhead), with clearer layer graphics and lower redraw overhead (`30 fps`, skip unchanged frames). 
-- `System & Defaults`: Settings/save flow was simplified and hardened (`System` save flow, save prompts, `Chaos Defaults` persistence, `Menu Wrap`, screensaver/wake refinement) with better memory posture versus upstream (`SRAM`/`CCRAM` reduction vs lineage firmwares). 
-- `Simulators`: Desktop and Web simulator paths were clarified; Desktop gained configurable DIN/USB MIDI routing, tracing, better Launchpad port/model handling, and firmware-aligned behavior. 
-- `Documentation`: Website, manual, cheatsheet, and simulator docs are maintained as a coherent layer aligned to current firmware behavior, including improved online manual search/navigation and a complete rework of the Launchpad cheatsheet. 
-- `Reliability hardening`: Project `Load`/`Save`/`Save As` file-task flow is serialized and UI-thread delivered to reduce intermittent reboot risk; SD boot path was hardened for slower cards without relaxing runtime watchdog behavior. This is strong partial hardening, not yet full architectural closure.
-- `Ecosystem cleanup`: Ongoing coherence work across site, docs, simulator tooling, and reference pages.
+- `Generators & Performance Workflow`: `Random`, `Euclidean`, `Acid`, and `Chaos` form a broader generator ecosystem built around preview/apply safety, `A/B` comparison, explicit reroll behavior, and live-performance use. `Acid` includes `Layer`, `Phrase`, and `Eucl Phrase`; `Chaos` expands into `Vandalize`, `Wreck`, and non-Note `Entropy`.
+- `Launchpad`: Launchpad is treated as a first-class performance layer, with Generators Mode, Init actions, Undo/Redo, safer cancel/apply behavior, and track-aware mappings across Note and non-Note tracks.
+- `Step Editing, Timing & Sequencing`: External `16-step Editing Mode` adds direct note/gate editing for Note tracks with 16-knob + 16-pad controllers. Core sequencing also gained bank-aware range editing, chain-aware note ties, Curve gate timing layers, per-track `Gate/Trigger` output behavior, tighter clock/reset handling, and improved scale/Voltage Mode behavior.
+- `Core Engine & Safety`: Generator and modal UI paths were hardened against wrong-target apply/cancel behavior, stale state, and controller retargeting edge cases. Routing/CV control now treats continuous, discrete, and trigger-like targets more safely and filters writes by compatible track mode.
+- `Reliability & Runtime`: STM32 memory pressure was reduced, heavy generator paths were hardened, and `Load` / `Save` / `Save As`, project browsing, and slower SD-card boot paths were improved to reduce race and reboot-prone behavior.
+- `Docs, Site & Simulator`: The website separates roles clearly: Home for overview, Features for the curated feature map, User Manual for practical use, Build Guide for hardware/build/simulator setup, and Cheatsheet for Launchpad reference. The online manual includes search/navigation and a printable PDF.
 
-Current validation scope:
-- Real hardware testing is still useful for `Reset Pulse` / `Reset Gate`.
-- `Voltage Mode` behavior is aligned across `Note`, `Arp`, and `Stochastic` with correct `1.2V` octave wrapping and non-chromatic user-scale handling; known limit: some `Arp`/`Stochastic` paths remain tied to a 12-slot-per-octave model when `notesPerOctave > 12`.
-- Desktop Simulator USB MIDI has been validated well on `macOS / OS X` with `Launchpad Mini MK3`, but not yet across other Launchpads or operating systems.
-- Hardware USB host support is limited to one directly connected controller at a time. USB hubs, including powered hubs, are unsupported; devices behind a hub are not enumerated by the current firmware.
+Known limits and current validation notes are tracked in the <a href="https://vinxscorza.github.io/performer/manual/#manual-validation-scope" target="_blank" rel="noopener noreferrer">User Manual validation section</a>.
+For the exact technical chronology, including inherited upstream history, see <a href="CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.
 
-Primary documentation for this fork: Vinx Scorza fork website, user manual, LP Cheatsheet, Web Simulator, features — <a href="https://vinxscorza.github.io/performer/" target="_blank" rel="noopener noreferrer">https://vinxscorza.github.io/performer/</a>
+If you are looking for a more conservative upstream baseline, you may prefer the original Westlicht or Mebitek lines. If you are interested in a more hands-on, performance-oriented evolution of PER|FORMER, this fork aims to be a solid machine for live performance, but also a crazy one for experimentation.
 
-For the broader curated overview, see <a href="https://vinxscorza.github.io/performer/features/" target="_blank" rel="noopener noreferrer">FEATURES</a>. For the exact technical chronology, including inherited upstream history, see the repository <a href="CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG</a>.
-
-This is a personal fork of the <a href="https://github.com/mebitek/performer" target="_blank" rel="noopener noreferrer">Mebitek fork</a>, itself based on the original <a href="https://github.com/westlicht/performer" target="_blank" rel="noopener noreferrer">Westlicht PER|FORMER firmware</a>.
-
-The Vinx Scorza line begins at `v0.3.2-vinx.1`. Everything before that point in this repository history and changelog is inherited from the Mebitek fork and kept here as upstream reference. Starting from the first standalone Vinx release, this fork uses standalone Vinx semantic versioning (`v0.x.y`) and no longer carries the inherited `v0.3.2-vinx.*` prefix. Historical entries remain unchanged as lineage reference.
-
-If you are looking for a more conservative upstream baseline, you may prefer the original Westlicht or Mebitek lines. If you are interested in a more hands-on, performance-oriented evolution of PER|FORMER, you are in the right place. What I'm aiming for is a solid machine for live performance, but also a crazy one for experimenting.<br>
 I am very grateful to Simon Kallweit for creating and developing the original Westlicht PER|FORMER. Free software should stay free in the sense of user freedom, but free as in freedom does not mean free labor. If this fork gives you value, consider supporting the work behind it:<br>
 <a href="https://vinxscorza.github.io/performer/donate/" target="_blank" rel="noopener noreferrer"><strong>Donate to Vinx Scorza</strong></a><br>
 <small>Upstream support: <a href="https://mebitek.github.io/performer/donate/" target="_blank" rel="noopener noreferrer">Mebitek</a> · <a href="https://westlicht.github.io/performer/donate/" target="_blank" rel="noopener noreferrer">Simon Kallweit / Westlicht</a>.</small>
@@ -312,3 +299,5 @@ The following third party libraries are used in this project.
 <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 
 This work is licensed under a <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT License</a>.
+
+The license notice preserves the original PER|FORMER copyright by Simon Kallweit and adds Vinx Scorza for the fork-specific work.
