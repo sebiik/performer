@@ -5,7 +5,15 @@ $provision_script = <<-SCRIPT
 
 echo "Installing dependencies ..."
 sudo apt-get update
-sudo apt-get install -y git python libtool autoconf cmake libusb-1.0.0-dev libftdi-dev pkg-config
+# Added python3, python3-dev, build-essential
+sudo apt-get install -y git python python3 python3-dev build-essential libtool autoconf cmake libusb-1.0.0-dev libftdi-dev pkg-config
+
+echo "Upgrading CMake to 3.26..."
+# Download and install CMake 3.26 globally to override xenial's 3.5.1
+wget -q https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.sh
+chmod +x cmake-3.26.4-linux-x86_64.sh
+sudo ./cmake-3.26.4-linux-x86_64.sh --skip-license --prefix=/usr/local
+rm cmake-3.26.4-linux-x86_64.sh
 
 echo "Installing toolchain ..."
 cd /vagrant
