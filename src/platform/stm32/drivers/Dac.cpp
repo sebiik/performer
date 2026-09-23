@@ -79,8 +79,8 @@ void Dac::write() {
 }
 
 void Dac::writeDac(uint8_t command, uint8_t address, uint16_t data, uint8_t function) {
-    // Shift data by one bit for DAC8568A
-    data <<= _dataShift;
+    // SEB: Hardcode shift data by one bit for DAC8568A
+    data <<= 1;
 
     uint8_t b1 = command;
     uint8_t b2 = (address << 4) | (data >> 12);
