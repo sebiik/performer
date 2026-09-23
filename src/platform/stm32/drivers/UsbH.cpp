@@ -203,7 +203,7 @@ void UsbH::init() {
 
     // USB_PWR_EN
 	gpio_mode_setup(USB_PWR_EN_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, USB_PWR_EN_PIN);
-    gpio_clear(USB_PWR_EN_PORT, USB_PWR_EN_PIN);
+    gpio_set(USB_PWR_EN_PORT, USB_PWR_EN_PIN); // SEB: using AP2161 which is active low
 
     // USB_PWR_FAULT
 	gpio_mode_setup(USB_PWR_FAULT_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, USB_PWR_FAULT_PIN);
@@ -244,11 +244,11 @@ void UsbH::process() {
 }
 
 void UsbH::powerOn() {
-    gpio_set(USB_PWR_EN_PORT, USB_PWR_EN_PIN);
+    gpio_clear(USB_PWR_EN_PORT, USB_PWR_EN_PIN); // SEB: using AP2161 which is active low
 }
 
 void UsbH::powerOff() {
-    gpio_clear(USB_PWR_EN_PORT, USB_PWR_EN_PIN);
+    gpio_set(USB_PWR_EN_PORT, USB_PWR_EN_PIN); // SEB: using AP2161 which is active low
 }
 
 bool UsbH::powerFault() {
