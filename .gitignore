@@ -12,3 +12,5 @@ src/platform/sim/sim/frontend/MidiConfig.h
 submodules/
 .emcache/
 /Users
+*.log
+/tags
